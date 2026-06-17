@@ -587,27 +587,62 @@ window.onFile = function(e){
 
 // ── GOOGLE BOOKS ──
 window.doSearch = async function(){
-  const q=document.getElementById('sq').value.trim(); if(!q) return;
+  const q=document.getElementById('sq').value.trim();
+  if(!q) return;
+
   const btn=document.getElementById('sbtn');
-  btn.textContent='검색중...'; btn.disabled=true;
+  btn.textContent='검색중...';
+  btn.disabled=true;
+
   try{
-    const res=await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&langRestrict=ko&maxResults=5`);
-    const data=await res.json();
-    if(!data.items||!data.items.length){ toast('검색 결과가 없어요'); return; }
+    const res = await fetch(
+      `https://openapi.naver.com/v1/search/book.json?query=${encodeURIComponent(q)}&display=5`,
+      {
+        headers:{
+          "X-Naver-Client-Id":"24m8dEyQ4lDVP_Z8t0AD",
+          "X-Naver-Client-Secret":"Byve0WV1ee"
+        }
+      }
+    );
+
+    const data = await res.json();
+
+    if(!data.items || !data.items.length){
+      toast('검색 결과가 없어요');
+      return;
+    }
+
     const resultsEl=document.getElementById('sResults');
     resultsEl.style.display='block';
-    resultsEl.innerHTML=data.items.map((item,i)=>{
+
+    window._books = data.items.map(item=>({
+      volumeInfo:{
+        title:(item.title||'').replace(/<[^>]+>/g,''),
+        authors:[item.author||''],
+        description:(item.description||''),
+        imageLinks:{thumbnail:item.image||''}
+      }
+    }));
+
+    resultsEl.innerHTML = window._books.map((item,i)=>{
       const info=item.volumeInfo;
-      const img=info.imageLinks?.thumbnail?.replace('http://','https://')||'';
+      const img=info.imageLinks?.thumbnail||'';
       return `<div class="sresult" onclick="pickBook(${i})">
         ${img?`<img src="${img}" alt="">`:''}
-        <div class="sresult-info"><div class="sresult-t">${info.title||''}</div><div class="sresult-a">${(info.authors||[]).join(', ')}</div></div>
+        <div class="sresult-info">
+          <div class="sresult-t">${info.title}</div>
+          <div class="sresult-a">${(info.authors||[]).join(', ')}</div>
+        </div>
         <span class="sresult-sel">선택</span>
       </div>`;
     }).join('');
-    window._books=data.items;
-  } catch(e){ toast('검색 실패'); }
-  finally{ btn.textContent='검색'; btn.disabled=false; }
+
+  }catch(e){
+    alert('네이버 검색 오류: ' + e.message);
+  }finally{
+    btn.textContent='검색';
+    btn.disabled=false;
+  }
 }
 window.pickBook = function(i){
   const item=window._books[i]; if(!item) return;

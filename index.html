@@ -372,9 +372,11 @@ body {
 .ch-title { flex:1; font-size:14px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .ch-check { font-size:12px; color:var(--success); flex-shrink:0; }
 
-/* ── SETTINGS POPUP (modal-ov/modal 재사용) ── */
-.panel { position:fixed; bottom:0; left:0; right:0; background:var(--bg); border-radius:20px 20px 0 0; padding:14px 18px max(24px,env(safe-area-inset-bottom)); z-index:540; transform:translateY(100%); transition:transform .28s cubic-bezier(.32,.72,0,1); max-height:88vh; overflow-y:auto; }
+/* ── SETTINGS POPUP ── */
+.panel { position:fixed; bottom:0; left:0; right:0; background:var(--bg); border-radius:20px 20px 0 0; z-index:550; transform:translateY(100%); transition:transform .28s cubic-bezier(.32,.72,0,1); max-height:92vh; display:flex; flex-direction:column; overflow:hidden; }
 .panel.on { transform:translateY(0); }
+.panel-sticky { padding:14px 18px 0; flex-shrink:0; }
+.panel-body   { flex:1; overflow-y:auto; padding:0 18px max(24px,env(safe-area-inset-bottom)); }
 .phandle { width:34px; height:4px; background:var(--line); border-radius:2px; margin:0 auto 16px; }
 .ptitle { font-size:13px; font-weight:700; margin-bottom:12px; }
 .prow { display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--line); }
@@ -525,11 +527,11 @@ body {
 .approved-role.admin { background:var(--accent2); color:var(--accent); }
 .approved-role.user  { background:#E8F5E9; color:#2E7D32; }
 .revoke-btn { margin-left:auto; height:28px; padding:0 10px; background:none; border:1px solid var(--line); border-radius:6px; font-size:11px; color:var(--ink3); cursor:pointer; }
-.confirm-ov { position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:400; display:flex; align-items:center; justify-content:center; padding:20px; opacity:0; pointer-events:none; transition:opacity .2s; }
+.confirm-ov { position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:600; display:flex; align-items:center; justify-content:center; padding:20px; opacity:0; pointer-events:none; transition:opacity .2s; }
 .confirm-ov.on { opacity:1; pointer-events:all; }
-.confirm-box { background:var(--bg); border-radius:16px; padding:24px 20px 16px; max-width:320px; width:100%; box-shadow:var(--sh2); }
-.confirm-icon { font-size:32px; text-align:center; margin-bottom:12px; }
-.confirm-title { font-size:15px; font-weight:800; text-align:center; margin-bottom:8px; }
+.confirm-box { background:var(--bg); border-radius:16px; padding:28px 20px 18px; max-width:320px; width:100%; box-shadow:var(--sh2); }
+.confirm-icon { font-size:56px; text-align:center; margin-bottom:14px; line-height:1; }
+.confirm-title { font-size:16px; font-weight:800; text-align:center; margin-bottom:8px; }
 .confirm-msg { font-size:13px; color:var(--ink2); text-align:center; line-height:1.6; margin-bottom:20px; }
 .confirm-btns { display:flex; gap:8px; }
 .confirm-cancel { flex:1; height:42px; border-radius:10px; border:1px solid var(--line); background:var(--bg); font-size:13px; font-weight:600; color:var(--ink2); cursor:pointer; }
@@ -688,7 +690,7 @@ body {
 
 <nav class="nav" style="display:none">
   <div class="nav-logo" id="navLogo">Novel<em>S</em></div>
-  <div style="position:absolute;left:50%;transform:translateX(-50%);font-size:11px;color:var(--ink3);background:var(--bg2);padding:2px 8px;border-radius:6px;font-weight:500">v1.1.9</div>
+  <div style="position:absolute;left:50%;transform:translateX(-50%);font-size:11px;color:var(--ink3);background:var(--bg2);padding:2px 8px;border-radius:6px;font-weight:500">v1.2.1</div>
   <div class="nav-user">
     <button class="nav-add" id="navAddBtn" onclick="openAdd()">＋ 소설 추가</button>
     <div class="nav-avatar" id="navAvatar" onclick="toggleUserMenu(event)"></div>
@@ -1015,118 +1017,123 @@ body {
 
 <!-- ── SETTINGS POPUP ── -->
 <div class="modal-ov" id="setOv" onclick="closePanel()"></div>
-<div class="modal" id="setPanel">
-  <div class="mhandle"></div>
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-    <span class="ptitle" style="margin:0;font-size:15px;font-weight:800">읽기 설정</span>
-    <div style="display:flex;gap:8px;align-items:center">
-      <button class="preset-btn" onclick="resetSettings()">기본값 초기화</button>
-      <button onclick="closePanel()" style="width:32px;height:32px;border-radius:50%;border:none;background:var(--bg2);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink2)">×</button>
+<div class="panel" id="setPanel">
+  <!-- 고정 헤더 -->
+  <div class="panel-sticky">
+    <div class="phandle"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <span style="font-size:15px;font-weight:800">읽기 설정</span>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="preset-btn" onclick="resetSettings()">기본값 초기화</button>
+        <button onclick="closePanel()" style="width:32px;height:32px;border-radius:50%;border:none;background:var(--bg2);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink2)">×</button>
+      </div>
+    </div>
+    <!-- 미리보기 (항상 보임) -->
+    <div class="preview-box" id="settingsPreview" style="margin-bottom:12px">
+      <span id="previewText">가나다라 AaBbCc 소설 미리보기</span>
     </div>
   </div>
 
-  <!-- 미리보기 -->
-  <div class="preview-box" id="settingsPreview">
-    <span id="previewText">가나다라 AaBbCc 소설 미리보기</span>
-  </div>
-
-  <!-- 섹션: 배경 -->
-  <div class="set-section-label">배경 테마</div>
-  <div class="theme-grid">
-    <div class="theme-card on" id="theme-light"   onclick="setTheme('light')"   data-theme="light">
-      <div class="theme-preview" style="background:#fff;color:#2A2A2A">가나다</div>
-      <span>라이트</span>
+  <!-- 스크롤 영역 -->
+  <div class="panel-body">
+    <!-- 섹션: 배경 -->
+    <div class="set-section-label">배경 테마</div>
+    <div class="theme-grid">
+      <div class="theme-card on" id="theme-light"   onclick="setTheme('light')"   data-theme="light">
+        <div class="theme-preview" style="background:#fff;color:#2A2A2A">가나다</div>
+        <span>라이트</span>
+      </div>
+      <div class="theme-card" id="theme-sepia"   onclick="setTheme('sepia')"   data-theme="sepia">
+        <div class="theme-preview" style="background:#F4ECD8;color:#3D2B1A">가나다</div>
+        <span>세피아</span>
+      </div>
+      <div class="theme-card" id="theme-dark"    onclick="setTheme('dark')"    data-theme="dark">
+        <div class="theme-preview" style="background:#1C1C28;color:#C8C8D8">가나다</div>
+        <span>다크</span>
+      </div>
+      <div class="theme-card" id="theme-amoled"  onclick="setTheme('amoled')"  data-theme="amoled">
+        <div class="theme-preview" style="background:#000;color:#E0E0E0">가나다</div>
+        <span>AMOLED</span>
+      </div>
     </div>
-    <div class="theme-card" id="theme-sepia"   onclick="setTheme('sepia')"   data-theme="sepia">
-      <div class="theme-preview" style="background:#F4ECD8;color:#3D2B1A">가나다</div>
-      <span>세피아</span>
+
+    <!-- 섹션: 글꼴 -->
+    <div class="set-section-label">글꼴</div>
+    <div class="font-grid" id="fontGrid">
+      <button class="font-btn on" data-font="system"   onclick="setFont('system',this)"  style="font-family:-apple-system,sans-serif">기본</button>
+      <button class="font-btn"    data-font="gothic"   onclick="setFont('gothic',this)"  style="font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif">고딕</button>
+      <button class="font-btn"    data-font="serif"    onclick="setFont('serif',this)"   style="font-family:'Nanum Myeongjo','Georgia',serif">명조</button>
+      <button class="font-btn"    data-font="mono"     onclick="setFont('mono',this)"    style="font-family:'Courier New',monospace">모노</button>
     </div>
-    <div class="theme-card" id="theme-dark"    onclick="setTheme('dark')"    data-theme="dark">
-      <div class="theme-preview" style="background:#1C1C28;color:#C8C8D8">가나다</div>
-      <span>다크</span>
+
+    <!-- 섹션: 글자 크기 -->
+    <div class="set-section-label">글자 크기 <span class="set-val-badge" id="fValBadge">17px</span></div>
+    <div class="slider-row">
+      <span class="slider-min">작게</span>
+      <input type="range" class="ns-slider" id="fontSlider" min="13" max="26" value="17" oninput="chFontSlider(this.value)">
+      <span class="slider-max">크게</span>
     </div>
-    <div class="theme-card" id="theme-amoled"  onclick="setTheme('amoled')"  data-theme="amoled">
-      <div class="theme-preview" style="background:#000;color:#E0E0E0">가나다</div>
-      <span>AMOLED</span>
+    <div class="prow" style="padding:6px 0">
+      <span class="plabel">빠른 조절</span>
+      <div class="fctrl">
+        <button class="fbtn" onclick="chFont(-1)">−</button>
+        <span class="fval" id="fVal">17</span>
+        <button class="fbtn" onclick="chFont(1)">＋</button>
+      </div>
     </div>
-  </div>
 
-  <!-- 섹션: 글꼴 -->
-  <div class="set-section-label">글꼴</div>
-  <div class="font-grid" id="fontGrid">
-    <button class="font-btn on" data-font="system"   onclick="setFont('system',this)"  style="font-family:-apple-system,sans-serif">기본</button>
-    <button class="font-btn"    data-font="gothic"   onclick="setFont('gothic',this)"  style="font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif">고딕</button>
-    <button class="font-btn"    data-font="serif"    onclick="setFont('serif',this)"   style="font-family:'Nanum Myeongjo','Georgia',serif">명조</button>
-    <button class="font-btn"    data-font="mono"     onclick="setFont('mono',this)"    style="font-family:'Courier New',monospace">모노</button>
-  </div>
-
-  <!-- 섹션: 글자 크기 -->
-  <div class="set-section-label">글자 크기 <span class="set-val-badge" id="fValBadge">17px</span></div>
-  <div class="slider-row">
-    <span class="slider-min">작게</span>
-    <input type="range" class="ns-slider" id="fontSlider" min="13" max="26" value="17" oninput="chFontSlider(this.value)">
-    <span class="slider-max">크게</span>
-  </div>
-  <div class="prow" style="padding:6px 0">
-    <span class="plabel">빠른 조절</span>
-    <div class="fctrl">
-      <button class="fbtn" onclick="chFont(-1)">−</button>
-      <span class="fval" id="fVal">17</span>
-      <button class="fbtn" onclick="chFont(1)">＋</button>
+    <!-- 섹션: 줄 간격 -->
+    <div class="set-section-label">줄 간격 <span class="set-val-badge" id="lhValBadge">1.9</span></div>
+    <div class="slider-row">
+      <span class="slider-min">좁게</span>
+      <input type="range" class="ns-slider" id="lhSlider" min="140" max="260" step="10" value="190" oninput="chLineHeight(this.value)">
+      <span class="slider-max">넓게</span>
     </div>
-  </div>
 
-  <!-- 섹션: 줄 간격 -->
-  <div class="set-section-label">줄 간격 <span class="set-val-badge" id="lhValBadge">1.9</span></div>
-  <div class="slider-row">
-    <span class="slider-min">좁게</span>
-    <input type="range" class="ns-slider" id="lhSlider" min="140" max="260" step="10" value="190" oninput="chLineHeight(this.value)">
-    <span class="slider-max">넓게</span>
-  </div>
+    <!-- 섹션: 문단 간격 -->
+    <div class="set-section-label">문단 간격 <span class="set-val-badge" id="pgValBadge">1.5em</span></div>
+    <div class="slider-row">
+      <span class="slider-min">좁게</span>
+      <input type="range" class="ns-slider" id="pgSlider" min="50" max="300" step="25" value="150" oninput="chParaGap(this.value)">
+      <span class="slider-max">넓게</span>
+    </div>
 
-  <!-- 섹션: 문단 간격 -->
-  <div class="set-section-label">문단 간격 <span class="set-val-badge" id="pgValBadge">1.5em</span></div>
-  <div class="slider-row">
-    <span class="slider-min">좁게</span>
-    <input type="range" class="ns-slider" id="pgSlider" min="50" max="300" step="25" value="150" oninput="chParaGap(this.value)">
-    <span class="slider-max">넓게</span>
-  </div>
+    <!-- 섹션: 본문 너비 -->
+    <div class="set-section-label">본문 최대 너비 <span class="set-val-badge" id="widthValBadge">680px</span></div>
+    <div class="width-btns">
+      <button class="width-btn" data-w="480"  onclick="setWidth(480,this)">좁음</button>
+      <button class="width-btn on" data-w="680" onclick="setWidth(680,this)">기본</button>
+      <button class="width-btn" data-w="860"  onclick="setWidth(860,this)">넓음</button>
+      <button class="width-btn" data-w="9999" onclick="setWidth(9999,this)">전체</button>
+    </div>
 
-  <!-- 섹션: 본문 너비 -->
-  <div class="set-section-label">본문 최대 너비 <span class="set-val-badge" id="widthValBadge">680px</span></div>
-  <div class="width-btns">
-    <button class="width-btn" data-w="480"  onclick="setWidth(480,this)">좁음</button>
-    <button class="width-btn on" data-w="680" onclick="setWidth(680,this)">기본</button>
-    <button class="width-btn" data-w="860"  onclick="setWidth(860,this)">넓음</button>
-    <button class="width-btn" data-w="9999" onclick="setWidth(9999,this)">전체</button>
-  </div>
+    <!-- 섹션: 자동 숨김 -->
+    <div class="set-section-label">UI 자동 숨김</div>
+    <div class="prow" style="padding:8px 0">
+      <span class="plabel" style="font-size:12px">읽는 중 상/하단 바 자동 숨김</span>
+      <label class="toggle-switch">
+        <input type="checkbox" id="autoHideToggle" onchange="setAutoHide(this.checked)" checked>
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+      </label>
+    </div>
+    <div class="prow" id="autoHideDelayRow" style="padding:6px 0">
+      <span class="plabel" style="font-size:12px">숨김 대기 시간 <span class="set-val-badge" id="hideDelayBadge">4초</span></span>
+      <input type="range" class="ns-slider" style="width:100px" id="hideDelaySlider" min="2" max="10" step="1" value="4" oninput="setHideDelay(this.value)">
+    </div>
 
-  <!-- 섹션: 자동 숨김 -->
-  <div class="set-section-label">UI 자동 숨김</div>
-  <div class="prow" style="padding:8px 0">
-    <span class="plabel" style="font-size:12px">읽는 중 상/하단 바 자동 숨김</span>
-    <label class="toggle-switch">
-      <input type="checkbox" id="autoHideToggle" onchange="setAutoHide(this.checked)" checked>
-      <span class="toggle-track"><span class="toggle-thumb"></span></span>
-    </label>
-  </div>
-  <div class="prow" id="autoHideDelayRow" style="padding:6px 0">
-    <span class="plabel" style="font-size:12px">숨김 대기 시간 <span class="set-val-badge" id="hideDelayBadge">4초</span></span>
-    <input type="range" class="ns-slider" style="width:100px" id="hideDelaySlider" min="2" max="10" step="1" value="4" oninput="setHideDelay(this.value)">
-  </div>
-
-  <!-- 섹션: 자동 스크롤 -->
-  <div class="set-section-label">자동 스크롤</div>
-  <div class="prow" style="padding:8px 0">
-    <span class="plabel" style="font-size:12px">자동으로 천천히 스크롤</span>
-    <label class="toggle-switch">
-      <input type="checkbox" id="autoScrollToggle" onchange="setAutoScroll(this.checked)">
-      <span class="toggle-track"><span class="toggle-thumb"></span></span>
-    </label>
-  </div>
-  <div class="prow" id="autoScrollSpeedRow" style="padding:6px 0;display:none">
-    <span class="plabel" style="font-size:12px">속도 <span class="set-val-badge" id="scrollSpeedBadge">보통</span></span>
-    <input type="range" class="ns-slider" style="width:100px" id="scrollSpeedSlider" min="1" max="5" step="1" value="3" oninput="setScrollSpeed(this.value)">
+    <!-- 섹션: 자동 스크롤 -->
+    <div class="set-section-label">자동 스크롤</div>
+    <div class="prow" style="padding:8px 0">
+      <span class="plabel" style="font-size:12px">자동으로 천천히 스크롤</span>
+      <label class="toggle-switch">
+        <input type="checkbox" id="autoScrollToggle" onchange="setAutoScroll(this.checked)">
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+      </label>
+    </div>
+    <div class="prow" id="autoScrollSpeedRow" style="padding:6px 0;display:none">
+      <span class="plabel" style="font-size:12px">속도 <span class="set-val-badge" id="scrollSpeedBadge">보통</span></span>
+      <input type="range" class="ns-slider" style="width:100px" id="scrollSpeedSlider" min="1" max="5" step="1" value="3" oninput="setScrollSpeed(this.value)">
+    </div>
   </div>
 </div>
 

@@ -2,6 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
+<meta name="color-scheme" content="light">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NovelShelf</title>
 <style>
@@ -17,20 +18,14 @@
   --tr: 0.15s ease;
   --lib-bg: #FFFFFF;
 }
-@media (prefers-color-scheme: dark) {
-  :root {
-    --ink:#F0F0F0; --ink2:#A0A0A0; --ink3:#666;
-    --bg:#111111; --bg2:#1C1C1C; --line:#2A2A2A;
-    --accent2:#1e1b4b;
-    --lib-bg:#111111;
-    --sh:0 2px 12px rgba(0,0,0,.4); --sh2:0 6px 24px rgba(0,0,0,.5);
-  }
-}
 * { box-sizing:border-box; margin:0; padding:0; }
-body { font-family:-apple-system,'Apple SD Gothic Neo',BlinkMacSystemFont,'Noto Sans KR',sans-serif; background:var(--bg); color:var(--ink); -webkit-font-smoothing:antialiased; }
-
-/* Library page — clean white */
-#library { background:var(--lib-bg); min-height:100vh; }
+body {
+  font-family:-apple-system,'Apple SD Gothic Neo',BlinkMacSystemFont,'Noto Sans KR',sans-serif;
+  background:#FFFFFF; color:#111111;
+  -webkit-font-smoothing:antialiased;
+  color-scheme: light; /* 다크모드 비활성화 */
+}
+#library { background:#FFFFFF; min-height:100vh; }
 
 /* ── SKELETON ── */
 @keyframes shimmer { 0%{background-position:-400px 0} 100%{background-position:400px 0} }
@@ -38,7 +33,7 @@ body { font-family:-apple-system,'Apple SD Gothic Neo',BlinkMacSystemFont,'Noto 
 
 /* ── NAV ── */
 .nav { position:sticky; top:0; z-index:100; background:#fff; border-bottom:1px solid var(--line); height:54px; padding:0 16px; display:flex; align-items:center; gap:10px; }
-@media(prefers-color-scheme:dark){.nav{background:#111;}}
+}
 .nav-logo { font-size:18px; font-weight:900; letter-spacing:-.5px; margin-right:auto; color:var(--ink); }
 .nav-logo em { color:var(--accent); font-style:normal; }
 .nav-logo span { color:var(--ink3); font-weight:400; font-size:12px; margin-left:4px; letter-spacing:0; }
@@ -47,7 +42,7 @@ body { font-family:-apple-system,'Apple SD Gothic Neo',BlinkMacSystemFont,'Noto 
 
 /* ── STATS TABS ── */
 .stats { display:flex; border-bottom:1px solid var(--line); background:#fff; }
-@media(prefers-color-scheme:dark){.stats{background:#111;}}
+}
 .stat { flex:1; padding:14px 0; text-align:center; border-right:1px solid var(--line); cursor:pointer; position:relative; transition:background var(--tr); }
 .stat:last-child { border-right:none; }
 .stat::after { content:''; position:absolute; bottom:0; left:50%; right:50%; height:2px; background:var(--accent); transition:left .2s,right .2s; }
@@ -66,7 +61,7 @@ body { font-family:-apple-system,'Apple SD Gothic Neo',BlinkMacSystemFont,'Noto 
 .sort-btn { height:40px; padding:0 12px; border:1px solid var(--line); border-radius:var(--r); background:var(--bg2); font-size:12px; font-weight:600; color:var(--ink2); cursor:pointer; white-space:nowrap; }
 .sort-btn:hover { border-color:var(--accent); }
 .sort-menu { position:absolute; right:0; top:44px; background:#fff; border:1px solid var(--line); border-radius:var(--r); box-shadow:var(--sh2); min-width:150px; overflow:hidden; z-index:50; display:none; }
-@media(prefers-color-scheme:dark){.sort-menu{background:#1C1C1C;}}
+}
 .sort-menu.open { display:block; }
 .sort-item { padding:11px 16px; font-size:13px; cursor:pointer; display:flex; justify-content:space-between; }
 .sort-item:hover { background:var(--bg2); }
@@ -76,7 +71,7 @@ body { font-family:-apple-system,'Apple SD Gothic Neo',BlinkMacSystemFont,'Noto 
 .filter { display:flex; gap:7px; padding:10px 16px; overflow-x:auto; scrollbar-width:none; }
 .filter::-webkit-scrollbar { display:none; }
 .chip { padding:5px 13px; border-radius:20px; font-size:12px; font-weight:600; border:1px solid var(--line); background:#fff; color:var(--ink2); cursor:pointer; white-space:nowrap; transition:all var(--tr); }
-@media(prefers-color-scheme:dark){.chip{background:#1C1C1C;}}
+}
 .chip:hover { border-color:var(--accent); color:var(--accent); }
 .chip.on { background:var(--accent); color:#fff; border-color:var(--accent); }
 
@@ -84,7 +79,7 @@ body { font-family:-apple-system,'Apple SD Gothic Neo',BlinkMacSystemFont,'Noto 
 .recent-scroll { display:flex; gap:10px; padding:0 16px 16px; overflow-x:auto; scrollbar-width:none; }
 .recent-scroll::-webkit-scrollbar { display:none; }
 .rc { flex-shrink:0; width:240px; border:1px solid var(--line); border-radius:var(--r2); padding:11px; display:flex; gap:10px; cursor:pointer; background:#fff; transition:box-shadow var(--tr),transform var(--tr); }
-@media(prefers-color-scheme:dark){.rc{background:#1C1C1C;}}
+}
 .rc:hover { box-shadow:var(--sh2); transform:translateY(-2px); }
 .rc-thumb { width:44px; height:58px; border-radius:7px; flex-shrink:0; overflow:hidden; position:relative; }
 .rc-thumb img { width:100%; height:100%; object-fit:cover; }
@@ -185,7 +180,7 @@ body { font-family:-apple-system,'Apple SD Gothic Neo',BlinkMacSystemFont,'Noto 
 /* ── VIEWER ── */
 #viewer { display:none; flex-direction:column; height:100vh; overflow:hidden; }
 .vn { position:relative; z-index:50; background:rgba(255,255,255,.97); backdrop-filter:blur(12px); border-bottom:1px solid var(--line); height:50px; padding:0 14px; display:flex; align-items:center; gap:10px; transition:transform .28s cubic-bezier(.32,.72,0,1),opacity .28s; }
-@media(prefers-color-scheme:dark){.vn{background:rgba(17,17,17,.97);}}
+}
 .vn.hidden { transform:translateY(-100%); opacity:0; pointer-events:none; }
 .vback { width:30px; height:30px; border-radius:8px; border:1px solid var(--line); background:var(--bg); cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center; color:var(--ink); }
 .vtw { flex:1; overflow:hidden; }
@@ -200,7 +195,7 @@ body { font-family:-apple-system,'Apple SD Gothic Neo',BlinkMacSystemFont,'Noto 
 .vtext { font-size:17px; line-height:1.9; color:#2A2A2A; word-break:keep-all; transition:font-size .15s; }
 .vtext p { margin-bottom:1.5em; }
 .vfoot { position:relative; background:rgba(255,255,255,.97); backdrop-filter:blur(12px); border-top:1px solid var(--line); padding:9px 14px; display:flex; gap:8px; z-index:50; flex-shrink:0; transition:transform .28s cubic-bezier(.32,.72,0,1),opacity .28s; }
-@media(prefers-color-scheme:dark){.vfoot{background:rgba(17,17,17,.97);}}
+}
 .vfoot.hidden { transform:translateY(100%); opacity:0; pointer-events:none; }
 .vbtn { flex:1; height:38px; border-radius:8px; border:1px solid var(--line); background:var(--bg); font-size:12px; font-weight:600; color:var(--ink2); cursor:pointer; transition:border-color var(--tr),color var(--tr); }
 .vbtn:hover { border-color:var(--accent); color:var(--accent); }
@@ -242,12 +237,6 @@ body { font-family:-apple-system,'Apple SD Gothic Neo',BlinkMacSystemFont,'Noto 
 .fbtn { width:32px; height:32px; border-radius:8px; border:1px solid var(--line); background:var(--bg2); font-size:16px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--ink); transition:background var(--tr); }
 .fbtn:hover { background:var(--accent2); }
 .fval { font-size:14px; font-weight:700; min-width:30px; text-align:center; }
-.tbtns { display:flex; gap:8px; }
-.tdot { width:26px; height:26px; border-radius:50%; border:2.5px solid var(--line); cursor:pointer; transition:border-color .15s,transform .15s; }
-.tdot:hover { transform:scale(1.1); }
-.tdot.on { border-color:var(--accent); box-shadow:0 0 0 2px var(--accent2); }
-.lh-slider { -webkit-appearance:none; appearance:none; width:120px; height:4px; border-radius:2px; background:var(--line); outline:none; cursor:pointer; }
-.lh-slider::-webkit-slider-thumb { -webkit-appearance:none; appearance:none; width:16px; height:16px; border-radius:50%; background:var(--accent); cursor:pointer; }
 
 /* ── DETAIL ── */
 .detail { position:fixed; inset:0; background:var(--bg); z-index:200; display:flex; flex-direction:column; transform:translateY(100%); transition:transform .28s cubic-bezier(.32,.72,0,1); }
@@ -285,7 +274,7 @@ body { font-family:-apple-system,'Apple SD Gothic Neo',BlinkMacSystemFont,'Noto 
 
 /* White card body */
 .dbody { background:#fff; border-radius:20px 20px 0 0; margin-top:-16px; padding:20px 16px 24px; position:relative; z-index:2; }
-@media(prefers-color-scheme:dark){ .dbody { background:#1C1C1C; } }
+ }
 
 /* Stats row */
 .dstats { display:flex; gap:0; margin-bottom:20px; padding-bottom:18px; border-bottom:1px solid var(--line); }
@@ -314,7 +303,7 @@ body { font-family:-apple-system,'Apple SD Gothic Neo',BlinkMacSystemFont,'Noto 
 
 /* Fixed bottom read button */
 .dfoot { position:absolute; bottom:0; left:0; right:0; padding:10px 16px max(10px, env(safe-area-inset-bottom)); background:rgba(255,255,255,.97); backdrop-filter:blur(12px); border-top:1px solid var(--line); z-index:10; }
-@media(prefers-color-scheme:dark){ .dfoot { background:rgba(28,28,28,.97); } }
+ }
 .dread { width:100%; height:50px; background:var(--accent); color:#fff; border:none; border-radius:14px; font-size:16px; font-weight:800; cursor:pointer; transition:opacity var(--tr),transform var(--tr); box-shadow:0 4px 16px rgba(108,92,231,.35); }
 .dread:hover { opacity:.9; transform:translateY(-1px); }
 
@@ -435,7 +424,6 @@ body { font-family:-apple-system,'Apple SD Gothic Neo',BlinkMacSystemFont,'Noto 
 
 /* Swipe hint */
 @keyframes swipeLeft { 0%,100%{transform:translateX(0)} 50%{transform:translateX(-8px)} }
-.swipe-hint { animation:swipeLeft 1.2s ease 1s 2; }
 </style>
 </head>
 <body>
@@ -800,7 +788,6 @@ const storage = getStorage(app);
 const LABELS = { romance:'로맨스', fantasy:'판타지', thriller:'스릴러', sf:'SF', historical:'역사', mystery:'미스터리' };
 const GENRE_ICON = { romance:'💕', fantasy:'🔮', thriller:'🔪', sf:'🚀', historical:'📜', mystery:'🕵️' };
 const SORTS = { recent:'최근 추가', lastRead:'최근 읽은', progress:'진행률 높은', progressAsc:'진행률 낮은', title:'제목순' };
-const CIRCUMFERENCE = 2 * Math.PI * 42;
 
 // ── STATE ──
 let novels = [], genre = 'all', sortKey = 'recent', tab = 'all';
@@ -816,7 +803,7 @@ let hideDelay  = parseInt(localStorage.getItem('ns_hideDelay')   || '4', 10);
 let scrollSpeed = parseInt(localStorage.getItem('ns_scrollSpeed')|| '3', 10);
 let viewMode   = localStorage.getItem('ns_viewMode') || 'grid'; // 'grid' | 'list'
 let statsOpen  = localStorage.getItem('ns_statsOpen') === 'true';
-let selG = '', coverUrl = '', curFile = null, fileContent = '';
+let selG = '', coverUrl = '', curFile = null;
 let searchDebounce = null;
 // viewer UI state
 let uiVisible = true, tapHintShown = false, uiHideTimer = null;
@@ -831,7 +818,6 @@ async function loadNovels() {
     render();
     updateStats();
   } catch(e) {
-    console.error('[NS]', e);
     showToast('데이터 불러오기 실패', 'error');
     document.getElementById('grid').innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div><div class="empty-t">불러오기 실패</div><div class="empty-s">${escapeHtml(e.message)}</div><button onclick="loadNovels()" style="margin-top:14px;padding:8px 18px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer">다시 시도</button></div>`;
   }
@@ -1225,7 +1211,7 @@ function renderCh() {
   document.getElementById('prevBtn').disabled = curCh===0;
   document.getElementById('nextBtn').textContent = curCh===n._chs.length-1?'완독 ✓':'다음 →';
   n.progress = pct;
-  updateDoc(doc(db,'novels',curId),{progress:pct}).catch(console.error);
+  updateDoc(doc(db,'novels',curId),{progress:pct}).catch(()=>{});
 
   // Reset auto-hide
   setViewerUI(true);
@@ -1251,7 +1237,7 @@ window.nextCh = function() {
   const n = novels.find(x=>x.id===curId); if(!n?._chs) return;
   if (curCh<n._chs.length-1) { curCh++; renderCh(); }
   else {
-    updateDoc(doc(db,'novels',curId),{progress:100}).catch(console.error);
+    updateDoc(doc(db,'novels',curId),{progress:100}).catch(()=>{});
     n.progress=100; updateStats();
     showToast('🎉 완독을 축하드려요!');
     setTimeout(closeViewer,1800);
@@ -1530,7 +1516,7 @@ window.closeAdd = function() {
   document.getElementById('iTitle').classList.remove('error');
   document.getElementById('iTitle-hint')?.classList.remove('visible');
   document.getElementById('fileInput').value='';
-  selG=''; coverUrl=''; curFile=null; fileContent='';
+  selG=''; coverUrl=''; curFile=null;
 };
 window.selGenre = function(btn) { document.querySelectorAll('.gchip').forEach(b=>b.classList.remove('on')); btn.classList.add('on'); selG=btn.dataset.g; };
 window.clearFieldError = function(id) { document.getElementById(id)?.classList.remove('error'); document.getElementById(id+'-hint')?.classList.remove('visible'); };
@@ -1543,7 +1529,7 @@ window.onFile = function(e) { const f=e.target.files[0]; if(f) processFile(f); }
 function processFile(f) {
   curFile=f;
   const r=new FileReader();
-  r.onload=ev=>{ fileContent=ev.target.result; document.getElementById('fileLabel').textContent=`✓ ${f.name} (${Math.round(f.size/1024)}KB)`; if(!document.getElementById('iTitle').value) document.getElementById('iTitle').value=f.name.replace(/\.txt$/i,''); };
+  r.onload=ev=>{ document.getElementById('fileLabel').textContent=`✓ ${f.name} (${Math.round(f.size/1024)}KB)`; if(!document.getElementById('iTitle').value) document.getElementById('iTitle').value=f.name.replace(/\.txt$/i,''); };
   r.onerror=()=>showToast('파일 읽기 실패','error');
   r.readAsText(f,'UTF-8');
 }

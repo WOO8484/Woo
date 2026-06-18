@@ -1120,15 +1120,16 @@ body {
   </div>
   <div class="mfield">
     <label class="mlabel">TXT 파일</label>
-    <label class="dropz" id="dropzLabel"
+    <input type="file" accept=".txt" id="fileInput" style="display:none" onchange="onFile(event)">
+    <div class="dropz" id="dropzLabel"
+      onclick="document.getElementById('fileInput').click()"
       ondragover="event.preventDefault();this.classList.add('dragover')"
       ondragleave="this.classList.remove('dragover')"
       ondrop="onFileDrop(event)">
-      <input type="file" accept=".txt" id="fileInput" onchange="onFile(event)">
       <div class="dropz-icon">📄</div>
       <div class="dropz-t" id="fileLabel">클릭하거나 파일을 드래그하세요</div>
       <div class="dropz-s">.txt 파일만 지원</div>
-    </label>
+    </div>
   </div>
   <div class="mfield"><label class="mlabel">줄거리</label><textarea class="mtarea" id="iSyn" placeholder="간단한 줄거리나 메모..."></textarea></div>
   <div class="mfield"><label class="mlabel">태그 (쉼표 구분)</label><input class="minput" id="iTags" placeholder="판타지, 로맨스, 해피엔딩"></div>
@@ -1201,7 +1202,7 @@ let hideDelay  = parseInt(localStorage.getItem('ns_hideDelay')   || '4', 10);
 let scrollSpeed = parseInt(localStorage.getItem('ns_scrollSpeed')|| '3', 10);
 let viewMode   = localStorage.getItem('ns_viewMode') || 'grid'; // 'grid' | 'list'
 // statsOpen 제거됨 (프로필 탭으로 이동)
-let selG = '', coverUrl = '', curFile = null;
+let selG = '', coverUrl = '', curFile = null, curFileText = '';
 let searchDebounce = null;
 // viewer UI state
 let uiVisible = true, tapHintShown = false, uiHideTimer = null;
@@ -1595,7 +1596,7 @@ window.openDetail = function(id) {
   document.getElementById('dReadBtn').textContent = pct>0&&pct<100 ? '이어 읽기' : pct>=100 ? '다시 읽기' : '처음부터 읽기';
 
   // Download
-  document.getElementById('dDlBtn').style.display = n.filePath ? 'block' : 'none';
+  document.getElementById('dDlBtn').style.display = (n.filePath || n.inlineText) ? 'block' : 'none';
 
   // Scroll to top
   document.getElementById('detail').querySelector('.detail-scroll').scrollTop = 0;
@@ -1652,7 +1653,7 @@ function splitCh(txt) {
 
 window.openViewer = async function(id) {
   const n = novels.find(x=>x.id===id); if(!n) return;
-  if(!n.filePath) { showToast('TXT 파일이 없어요'); return; }
+  if(!n.filePath && !n.inlineText) { showToast('TXT 파일이 없어요'); return; }
   curId = id;
   try {
     document.getElementById('vTitle').textContent = n.title;
@@ -1662,10 +1663,19 @@ window.openViewer = async function(id) {
     vv.style.display='flex'; vv.style.flexDirection='column';
     document.getElementById('vText').innerHTML='<div style="text-align:center;padding:48px;color:var(--ink3);font-size:13px">불러오는 중...</div>';
 
-    const url = await getDownloadURL(ref(storage,n.filePath));
-    const res = await fetch(url);
-    if(!res.ok) throw new Error(`HTTP ${res.status}`);
-    const txt = await res.text();
+    let txt = '';
+    if(n.inlineText) {
+      // Firestore에 저장된 텍스트 직접 사용
+      txt = n.inlineText;
+    } else if(n.filePath) {
+      // Storage에서 다운로드
+      const url = await getDownloadURL(ref(storage,n.filePath));
+      const res = await fetch(url);
+      if(!res.ok) throw new Error(`HTTP ${res.status}`);
+      txt = await res.text();
+    } else {
+      throw new Error('파일이 없어요');
+    }
     n._chs = splitCh(txt);
     curCh = n._chs.length>1 ? Math.min(Math.floor((n.progress/100)*(n._chs.length-1)), n._chs.length-1) : 0;
 
@@ -2068,7 +2078,7 @@ window.closeAdd = function() {
   document.getElementById('iTitle').classList.remove('error');
   document.getElementById('iTitle-hint')?.classList.remove('visible');
   document.getElementById('fileInput').value='';
-  selG=''; coverUrl=''; curFile=null;
+  selG=''; coverUrl=''; curFile=null; curFileText='';
 };
 window.selGenre = function(btn) { document.querySelectorAll('.gchip').forEach(b=>b.classList.remove('on')); btn.classList.add('on'); selG=btn.dataset.g; };
 window.clearFieldError = function(id) { document.getElementById(id)?.classList.remove('error'); document.getElementById(id+'-hint')?.classList.remove('visible'); };
@@ -2082,8 +2092,11 @@ function processFile(f) {
   curFile=f;
   const r=new FileReader();
   r.onload=ev=>{
-    document.getElementById('fileLabel').textContent=`✓ ${f.name} (${Math.round(f.size/1024)}KB)`;
+    const txt = ev.target.result;
+    curFileText = txt;
+    document.getElementById('fileLabel').textContent=`✓ ${f.name} (${Math.round(f.size/1024)}KB · ${txt.length.toLocaleString()}자)`;
     if(!document.getElementById('iTitle').value) document.getElementById('iTitle').value=f.name.replace(/\.txt$/i,'');
+    showToast('파일 읽기 완료 ✓');
   };
   r.onerror=()=>showToast('파일 읽기 실패','error');
   r.readAsText(f,'UTF-8');
@@ -2095,9 +2108,23 @@ window.saveNovel = async function() {
   saveBtn.textContent='저장 중...'; saveBtn.disabled=true;
   try {
     let filePath=null;
-    if(curFile){ const safe=curFile.name.replace(/[^a-zA-Z0-9가-힣._-]/g,'_'); filePath=`users/${currentUser.uid}/novels/${Date.now()}_${safe}`; await uploadBytes(ref(storage,filePath),curFile); }
+    // 파일 저장: 300KB 이하면 Firestore에 직접, 초과면 Storage
+    let inlineText = null;
+    if(curFile && curFileText) {
+      if(curFileText.length <= 300000) {
+        // Firestore에 직접 저장
+        inlineText = curFileText;
+        filePath = null;
+      } else {
+        // Storage에 업로드
+        const safe=curFile.name.replace(/[^a-zA-Z0-9가-힣._-]/g,'_');
+        filePath=`users/${currentUser.uid}/novels/${Date.now()}_${safe}`;
+        await uploadBytes(ref(storage,filePath),curFile);
+      }
+    }
     const tags=document.getElementById('iTags').value.split(',').map(t=>t.trim()).filter(Boolean);
-    const data={title,author:document.getElementById('iAuthor').value.trim()||'작자 미상',genre:selG||'romance',synopsis:document.getElementById('iSyn').value.trim(),tags,progress:0,coverUrl,filePath,totalChars:curFile?.size ? Math.round(curFile.size/2) : 0,addedAt:new Date().toISOString(),lastReadAt:null};
+    const totalChars = curFileText ? curFileText.length : 0;
+    const data={title,author:document.getElementById('iAuthor').value.trim()||'작자 미상',genre:selG||'romance',synopsis:document.getElementById('iSyn').value.trim(),tags,progress:0,coverUrl,filePath,inlineText,totalChars,addedAt:new Date().toISOString(),lastReadAt:null};
     let docRef, novelId;
     if(isAdmin) {
       // 관리자: sharedNovels에 저장 (모두가 볼 수 있음)

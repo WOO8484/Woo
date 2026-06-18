@@ -1170,7 +1170,7 @@ body {
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy, where, getDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, uploadBytesResumable, getDownloadURL, getBlob, deleteObject } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-storage.js";
+import { getStorage, ref, uploadBytes, uploadBytesResumable, getDownloadURL, getBlob, getBytes, deleteObject } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-storage.js";
 import {
   getAuth, onAuthStateChanged,
   signOut,
@@ -1691,22 +1691,19 @@ window.openViewer = async function(id) {
     if (n.inlineText) {
       txt = n.inlineText;
     } else if (n.filePath) {
-      showToast('다운로드 URL 가져오는 중...');
-      const url = await getDownloadURL(ref(storage, n.filePath));
+      showToast('파일 불러오는 중...');
 
-      showToast('파일 다운로드 중...');
-      const res = await fetch(url, { mode: 'cors' });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      // getBytes: SDK가 직접 가져옴 (CORS 없음)
+      const bytes = await getBytes(ref(storage, n.filePath));
 
-      showToast('파일 읽는 중...');
       if (n.filePath.endsWith('.gz')) {
-        const buf = await res.arrayBuffer();
+        // gzip 압축 해제
         const stream = new Response(
-          new Blob([buf]).stream().pipeThrough(new DecompressionStream('gzip'))
+          new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))
         );
         txt = await stream.text();
       } else {
-        txt = await res.text();
+        txt = new TextDecoder('utf-8').decode(bytes);
       }
     } else {
       throw new Error('저장된 파일이 없어요.');

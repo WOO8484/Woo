@@ -1299,8 +1299,8 @@ window.switchTab = function(tabName) {
   document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('on'));
   document.getElementById('page-' + tabName).classList.add('active');
   document.getElementById('tab-' + tabName).classList.add('on');
-  // nav 버튼 표시/숨김
-  document.getElementById('navAddBtn').style.display = tabName === 'shelf' ? '' : 'none';
+  // nav 버튼 표시/숨김 (관리자 + 서재 탭일 때만)
+  document.getElementById('navAddBtn').style.display = (tabName === 'shelf' && isAdmin) ? '' : 'none';
   // 탭별 타이틀
   const titles = { home:'Novel S', shelf:'내 서재', profile:'프로필' };
   document.getElementById('navLogo').innerHTML = `Novel<em>S</em><span>${tabName !== 'home' ? ' ' + (tabName === 'shelf' ? '서재' : '프로필') : ''}</span>`;
@@ -1539,7 +1539,6 @@ window.render = function() {
     const favStar = n.favorite ? '❤️' : '🤍';
     return `<div class="card" onclick="openDetail('${n.id}')">
       <div class="cover-wrap ${cc}" style="aspect-ratio:2/3;width:100%;position:relative">
-        ${coverInner}
         ${coverInner}
         <button class="fav-btn" onclick="toggleFav('${n.id}',event)" title="즐겨찾기">${favStar}</button>
         ${n.progress>=100?'<div class="done-badge">완독</div>':''}
@@ -2018,11 +2017,6 @@ function applyViewerSettings() {
   vText.style.setProperty('--para-gap', paraGap + 'em');
   // Update vText p margin-bottom
   document.querySelectorAll('#vText p').forEach(p => p.style.marginBottom = paraGap + 'em');
-  // Nav/foot bg
-  const vn = document.getElementById('vNav');
-  const vf = document.getElementById('vFoot');
-  if (vn) vn.style.background = t.navBg;
-  if (vf) vf.style.background = t.navBg;
   // Sync UI
   document.getElementById('fVal').textContent = fontSize;
   document.getElementById('fontSlider').value = fontSize;
@@ -2549,6 +2543,9 @@ function updateNavAvatar(user) {
   switchTab('home');
   document.getElementById('navAddBtn').style.display = 'none';
 }
-window.toggleUserMenu = function(e) { e.stopPropagation(); document.getElementById('userMenu').</script>
+window.toggleUserMenu = function(e) { e.stopPropagation(); document.getElementById('userMenu').classList.toggle('open'); };
+window.closeUserMenu  = function()  { document.getElementById('userMenu').classList.remove('open'); };
+document.addEventListener('click', () => closeUserMenu());
+</script>
 </body>
 </html>

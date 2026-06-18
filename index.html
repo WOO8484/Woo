@@ -1390,8 +1390,8 @@ function renderHome() {
     const cc = genreCoverClass(n.genre);
     const icon = GENRE_ICON[n.genre] || '📖';
     return `<div class="card" onclick="openDetail('${n.id}')">
-      <div class="cover-wrap ${cc}">
-        ${n.coverUrl ? `<img src="${escapeHtml(n.coverUrl)}" alt="" loading="lazy">` : `<div class="cover-pat"></div><div class="cover-stripe"></div><div class="cover-icon">${icon}</div>`}
+      <div class="cover-wrap ${cc}" style="aspect-ratio:2/3;width:100%">
+        ${n.coverUrl ? `<img src="${escapeHtml(n.coverUrl)}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">` : `<div class="cover-pat"></div><div class="cover-stripe"></div><div class="cover-icon">${icon}</div>`}
         ${n.progress >= 100 ? '<div class="done-badge">완독</div>' : ''}
         ${n.progress > 0 && n.progress < 100 ? `<div class="pct-badge">${n.progress}%</div>` : ''}
         <div class="cover-grad"><div class="cover-title">${escapeHtml(n.title)}</div></div>
@@ -1532,11 +1532,12 @@ window.render = function() {
     const cc = genreCoverClass(n.genre);
     const icon = GENRE_ICON[n.genre] || '📖';
     const coverInner = n.coverUrl
-      ? `<img src="${escapeHtml(n.coverUrl)}" alt="${escapeHtml(n.title)} 표지" loading="lazy">`
+      ? `<img src="${escapeHtml(n.coverUrl)}" alt="${escapeHtml(n.title)} 표지" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">`
       : `<div class="cover-pat"></div><div class="cover-stripe"></div><div class="cover-icon">${icon}</div>`;
     const favStar = n.favorite ? '❤️' : '🤍';
     return `<div class="card" onclick="openDetail('${n.id}')">
-      <div class="cover-wrap ${cc}" style="position:relative">
+      <div class="cover-wrap ${cc}" style="aspect-ratio:2/3;width:100%;position:relative">
+        ${coverInner}
         ${coverInner}
         <button class="fav-btn" onclick="toggleFav('${n.id}',event)" title="즐겨찾기">${favStar}</button>
         ${n.progress>=100?'<div class="done-badge">완독</div>':''}

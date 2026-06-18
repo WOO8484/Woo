@@ -40,45 +40,29 @@ body {
 .auth-tab { flex:1; height:36px; border:none; background:none; border-radius:7px; font-size:13px; font-weight:600; color:var(--ink3); cursor:pointer; transition:all var(--tr); }
 .auth-tab.on { background:#fff; color:var(--ink); box-shadow:var(--sh); }
 .auth-form { width:100%; max-width:360px; display:flex; flex-direction:column; gap:12px; }
-.auth-input {
-  width:100%; height:48px; border:1.5px solid var(--line); border-radius:12px;
-  padding:0 16px; font-size:15px; color:var(--ink); outline:none;
-  background:#fff; transition:border-color var(--tr);
-}
+.auth-input { width:100%; height:48px; border:1.5px solid var(--line); border-radius:12px; padding:0 16px; font-size:15px; color:var(--ink); outline:none; background:#fff; transition:border-color var(--tr); }
 .auth-input:focus { border-color:var(--accent); }
-.auth-input.error { border-color:var(--danger); }
-.auth-btn {
-  width:100%; height:50px; background:var(--accent); color:#fff;
-  border:none; border-radius:14px; font-size:16px; font-weight:700;
-  cursor:pointer; margin-top:4px; transition:opacity var(--tr);
-  box-shadow:0 4px 16px rgba(108,92,231,.3);
-}
+.auth-btn { width:100%; height:50px; background:var(--accent); color:#fff; border:none; border-radius:14px; font-size:16px; font-weight:700; cursor:pointer; margin-top:4px; transition:opacity var(--tr); box-shadow:0 4px 16px rgba(108,92,231,.3); }
 .auth-btn:hover { opacity:.9; }
 .auth-btn:disabled { opacity:.5; cursor:not-allowed; }
 .auth-divider { display:flex; align-items:center; gap:12px; margin:4px 0; }
 .auth-divider::before,.auth-divider::after { content:''; flex:1; height:1px; background:var(--line); }
 .auth-divider span { font-size:12px; color:var(--ink3); }
-.auth-google {
-  width:100%; height:50px; background:#fff; color:var(--ink);
-  border:1.5px solid var(--line); border-radius:14px;
-  font-size:15px; font-weight:600; cursor:pointer;
-  display:flex; align-items:center; justify-content:center; gap:10px;
-  transition:border-color var(--tr), box-shadow var(--tr);
-}
+.auth-google { width:100%; height:50px; background:#fff; color:var(--ink); border:1.5px solid var(--line); border-radius:14px; font-size:15px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; transition:border-color var(--tr),box-shadow var(--tr); }
 .auth-google:hover { border-color:#aaa; box-shadow:var(--sh); }
 .auth-google svg { width:20px; height:20px; flex-shrink:0; }
 .auth-forgot { text-align:center; font-size:12px; color:var(--accent); cursor:pointer; margin-top:2px; text-decoration:underline; }
 .auth-err { font-size:12px; color:var(--danger); text-align:center; min-height:16px; }
 
-/* Nav user info */
+/* Nav user */
 .nav-user { display:flex; align-items:center; gap:8px; }
-.nav-avatar { width:30px; height:30px; border-radius:50%; background:var(--accent2); border:2px solid var(--accent); overflow:hidden; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:var(--accent); cursor:pointer; }
-.nav-avatar img { width:100%; height:100%; object-fit:cover; }
-.user-menu { position:absolute; right:16px; top:58px; background:#fff; border:1px solid var(--line); border-radius:var(--r2); box-shadow:var(--sh2); min-width:180px; z-index:200; overflow:hidden; display:none; }
+.nav-avatar { width:32px; height:32px; border-radius:50%; background:var(--accent2); border:2px solid var(--accent); overflow:hidden; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:var(--accent); cursor:pointer; flex-shrink:0; transition:transform var(--tr); }
+.nav-avatar:hover { transform:scale(1.06); }
+.user-menu { position:absolute; right:16px; top:58px; background:#fff; border:1px solid var(--line); border-radius:var(--r2); box-shadow:var(--sh2); min-width:190px; z-index:200; overflow:hidden; display:none; }
 .user-menu.open { display:block; }
-.user-menu-info { padding:14px 16px 10px; border-bottom:1px solid var(--line); }
-.user-menu-name { font-size:13px; font-weight:700; color:var(--ink); }
-.user-menu-email { font-size:11px; color:var(--ink3); margin-top:2px; }
+.user-menu-info { padding:14px 16px 12px; border-bottom:1px solid var(--line); }
+.user-menu-name { font-size:14px; font-weight:800; color:var(--ink); }
+.user-menu-email { font-size:11px; color:var(--ink3); margin-top:3px; }
 .user-menu-item { padding:11px 16px; font-size:13px; cursor:pointer; display:flex; align-items:center; gap:10px; color:var(--ink2); transition:background var(--tr); }
 .user-menu-item:hover { background:var(--bg2); }
 .user-menu-item.danger { color:var(--danger); }
@@ -509,26 +493,20 @@ body {
 <!-- ── AUTH SCREEN ── -->
 <div id="authScreen" style="display:none">
   <div class="auth-logo">Novel<em>S</em></div>
-  <div class="auth-sub">내 소설 서재에 오신 것을 환영해요</div>
-
+  <div class="auth-sub">소설 서재에 오신 것을 환영해요</div>
   <div class="auth-tabs">
     <button class="auth-tab on" id="tabLogin"  onclick="switchAuthTab('login')">로그인</button>
     <button class="auth-tab"    id="tabSignup" onclick="switchAuthTab('signup')">회원가입</button>
   </div>
-
   <div class="auth-form">
-    <!-- 회원가입 전용: 닉네임 -->
-    <input class="auth-input" id="authName" placeholder="닉네임" style="display:none" autocomplete="nickname">
+    <input class="auth-input" id="authName"  placeholder="닉네임" style="display:none" autocomplete="nickname">
     <input class="auth-input" id="authEmail" type="email" placeholder="이메일" autocomplete="email">
     <input class="auth-input" id="authPw"    type="password" placeholder="비밀번호 (6자 이상)" autocomplete="current-password">
-    <!-- 회원가입 전용: 비밀번호 확인 -->
     <input class="auth-input" id="authPw2"   type="password" placeholder="비밀번호 확인" style="display:none" autocomplete="new-password">
     <div class="auth-err" id="authErr"></div>
     <button class="auth-btn" id="authSubmitBtn" onclick="authSubmit()">로그인</button>
     <div class="auth-forgot" id="authForgot" onclick="sendReset()">비밀번호를 잊으셨나요?</div>
-
     <div class="auth-divider"><span>또는</span></div>
-
     <button class="auth-google" onclick="loginGoogle()">
       <svg viewBox="0 0 48 48"><path fill="#4285F4" d="M44.5 20H24v8.5h11.8C34.7 33.9 29.9 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-21 0-1.3-.2-2.7-.5-4z"/><path fill="#34A853" d="M6.3 14.7l7 5.1C15.1 16.1 19.2 13 24 13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 16.2 2 9.4 7.3 6.3 14.7z"/><path fill="#FBBC05" d="M24 46c5.8 0 10.7-1.9 14.3-5.2l-6.6-5.4C29.8 37 27 38 24 38c-5.8 0-10.7-3.9-12.5-9.3l-7 5.4C7.9 41.3 15.4 46 24 46z"/><path fill="#EA4335" d="M44.5 20H24v8.5h11.8c-.8 2.3-2.3 4.3-4.3 5.7l6.6 5.4C42 36.1 45 30.5 45 24c0-1.3-.2-2.7-.5-4z"/></svg>
       Google로 계속하기
@@ -542,7 +520,6 @@ body {
     <div class="user-menu-name" id="menuName">사용자</div>
     <div class="user-menu-email" id="menuEmail"></div>
   </div>
-  <div class="user-menu-item" onclick="closeUserMenu()">⚙️ 설정</div>
   <div class="user-menu-item danger" onclick="doLogout()">🚪 로그아웃</div>
 </div>
 
@@ -550,7 +527,7 @@ body {
   <div class="nav-logo">Novel<em>S</em><span>내 서재</span></div>
   <div class="nav-user">
     <button class="nav-add" onclick="openAdd()">＋ 소설 추가</button>
-    <div class="nav-avatar" id="navAvatar" onclick="toggleUserMenu(event)">?</div>
+    <div class="nav-avatar" id="navAvatar" onclick="toggleUserMenu(event)"></div>
   </div>
 </nav>
 
@@ -1743,14 +1720,12 @@ window.toast = msg => showToast(msg);
 onAuthStateChanged(auth, user => {
   currentUser = user;
   if (user) {
-    // 로그인 됨 → 앱 표시
     document.getElementById('authScreen').style.display = 'none';
     document.querySelector('.nav').style.display = 'flex';
     document.getElementById('library').style.display = 'block';
     updateNavAvatar(user);
     loadNovels();
   } else {
-    // 로그아웃 됨 → 로그인 화면
     document.getElementById('authScreen').style.display = 'flex';
     document.querySelector('.nav').style.display = 'none';
     document.getElementById('library').style.display = 'none';
@@ -1759,20 +1734,17 @@ onAuthStateChanged(auth, user => {
 });
 
 // ── AUTH UI ──
-let authMode = 'login'; // 'login' | 'signup'
-
+let authMode = 'login';
 window.switchAuthTab = function(mode) {
   authMode = mode;
-  document.getElementById('tabLogin').classList.toggle('on',  mode === 'login');
-  document.getElementById('tabSignup').classList.toggle('on', mode === 'signup');
-  document.getElementById('authSubmitBtn').textContent = mode === 'login' ? '로그인' : '회원가입';
-  document.getElementById('authName').style.display  = mode === 'signup' ? '' : 'none';
-  document.getElementById('authPw2').style.display   = mode === 'signup' ? '' : 'none';
-  document.getElementById('authForgot').style.display = mode === 'login' ? '' : 'none';
-  document.getElementById('authPw').autocomplete = mode === 'signup' ? 'new-password' : 'current-password';
+  document.getElementById('tabLogin').classList.toggle('on',  mode==='login');
+  document.getElementById('tabSignup').classList.toggle('on', mode==='signup');
+  document.getElementById('authSubmitBtn').textContent = mode==='login' ? '로그인' : '회원가입';
+  document.getElementById('authName').style.display   = mode==='signup' ? '' : 'none';
+  document.getElementById('authPw2').style.display    = mode==='signup' ? '' : 'none';
+  document.getElementById('authForgot').style.display = mode==='login'  ? '' : 'none';
   document.getElementById('authErr').textContent = '';
 };
-
 window.authSubmit = async function() {
   const email = document.getElementById('authEmail').value.trim();
   const pw    = document.getElementById('authPw').value;
@@ -1780,7 +1752,6 @@ window.authSubmit = async function() {
   const name  = document.getElementById('authName').value.trim();
   const errEl = document.getElementById('authErr');
   const btn   = document.getElementById('authSubmitBtn');
-
   errEl.textContent = '';
   if (!email || !pw) { errEl.textContent = '이메일과 비밀번호를 입력해주세요'; return; }
   if (authMode === 'signup') {
@@ -1788,13 +1759,11 @@ window.authSubmit = async function() {
     if (pw.length < 6) { errEl.textContent = '비밀번호는 6자 이상이어야 해요'; return; }
     if (pw !== pw2) { errEl.textContent = '비밀번호가 일치하지 않아요'; return; }
   }
-
   btn.disabled = true;
   btn.textContent = authMode === 'login' ? '로그인 중...' : '가입 중...';
   try {
-    if (authMode === 'login') {
-      await signInWithEmailAndPassword(auth, email, pw);
-    } else {
+    if (authMode === 'login') await signInWithEmailAndPassword(auth, email, pw);
+    else {
       const cred = await createUserWithEmailAndPassword(auth, email, pw);
       await updateProfile(cred.user, { displayName: name });
     }
@@ -1804,70 +1773,47 @@ window.authSubmit = async function() {
     btn.textContent = authMode === 'login' ? '로그인' : '회원가입';
   }
 };
-
 window.loginGoogle = async function() {
-  const errEl = document.getElementById('authErr');
-  errEl.textContent = '';
-  try {
-    await signInWithPopup(auth, googleProvider);
-  } catch(e) {
-    if (e.code !== 'auth/popup-closed-by-user') {
-      errEl.textContent = authErrorMsg(e.code);
-    }
-  }
+  const errEl = document.getElementById('authErr'); errEl.textContent = '';
+  try { await signInWithPopup(auth, googleProvider); }
+  catch(e) { if (e.code !== 'auth/popup-closed-by-user') errEl.textContent = authErrorMsg(e.code); }
 };
-
 window.sendReset = async function() {
   const email = document.getElementById('authEmail').value.trim();
   if (!email) { document.getElementById('authErr').textContent = '이메일을 먼저 입력해주세요'; return; }
-  try {
-    await sendPasswordResetEmail(auth, email);
-    showToast('비밀번호 재설정 메일을 보냈어요 📧');
-  } catch(e) {
-    document.getElementById('authErr').textContent = authErrorMsg(e.code);
-  }
+  try { await sendPasswordResetEmail(auth, email); showToast('비밀번호 재설정 메일을 보냈어요 📧'); }
+  catch(e) { document.getElementById('authErr').textContent = authErrorMsg(e.code); }
 };
-
 window.doLogout = async function() {
   closeUserMenu();
   await signOut(auth);
   showToast('로그아웃 했어요');
 };
-
 function authErrorMsg(code) {
   const map = {
-    'auth/user-not-found':      '등록되지 않은 이메일이에요',
-    'auth/wrong-password':      '비밀번호가 올바르지 않아요',
-    'auth/invalid-credential':  '이메일 또는 비밀번호가 올바르지 않아요',
-    'auth/email-already-in-use':'이미 사용 중인 이메일이에요',
-    'auth/invalid-email':       '올바른 이메일 형식이 아니에요',
-    'auth/weak-password':       '비밀번호가 너무 짧아요 (6자 이상)',
+    'auth/user-not-found':       '등록되지 않은 이메일이에요',
+    'auth/wrong-password':       '비밀번호가 올바르지 않아요',
+    'auth/invalid-credential':   '이메일 또는 비밀번호가 올바르지 않아요',
+    'auth/email-already-in-use': '이미 사용 중인 이메일이에요',
+    'auth/invalid-email':        '올바른 이메일 형식이 아니에요',
+    'auth/weak-password':        '비밀번호가 너무 짧아요 (6자 이상)',
     'auth/network-request-failed':'네트워크 연결을 확인해주세요',
-    'auth/too-many-requests':   '잠시 후 다시 시도해주세요',
+    'auth/too-many-requests':    '잠시 후 다시 시도해주세요',
   };
   return map[code] || '오류가 발생했어요 (' + code + ')';
 }
 
-// ── NAV USER MENU ──
+// ── NAV USER ──
 function updateNavAvatar(user) {
+  const name = user.displayName || user.email.split('@')[0];
   const avatar = document.getElementById('navAvatar');
-  const name   = user.displayName || user.email.split('@')[0];
-  document.getElementById('menuName').textContent  = user.displayName || '사용자';
+  document.getElementById('menuName').textContent  = user.displayName || name;
   document.getElementById('menuEmail').textContent = user.email;
-  if (user.photoURL) {
-    avatar.innerHTML = `<img src="${user.photoURL}" alt="프로필">`;
-  } else {
-    avatar.textContent = name.charAt(0).toUpperCase();
-  }
+  if (user.photoURL) avatar.innerHTML = `<img src="${user.photoURL}" alt="프로필" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+  else avatar.textContent = name.charAt(0).toUpperCase();
 }
-
-window.toggleUserMenu = function(e) {
-  e.stopPropagation();
-  document.getElementById('userMenu').classList.toggle('open');
-};
-window.closeUserMenu = function() {
-  document.getElementById('userMenu').classList.remove('open');
-};
+window.toggleUserMenu = function(e) { e.stopPropagation(); document.getElementById('userMenu').classList.toggle('open'); };
+window.closeUserMenu  = function()  { document.getElementById('userMenu').classList.remove('open'); };
 document.addEventListener('click', () => closeUserMenu());
 </script>
 </body>

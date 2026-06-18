@@ -368,10 +368,8 @@ body {
 .ch-title { flex:1; font-size:14px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .ch-check { font-size:12px; color:var(--success); flex-shrink:0; }
 
-/* ── OVERLAY & PANELS ── */
-.overlay { position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:530; opacity:0; pointer-events:none; transition:opacity .2s; }
-.overlay.on { opacity:1; pointer-events:all; }
-.panel { position:fixed; bottom:0; left:0; right:0; background:var(--bg); border-radius:20px 20px 0 0; padding:14px 18px 34px; z-index:540; transform:translateY(100%); transition:transform .28s cubic-bezier(.32,.72,0,1); }
+/* ── SETTINGS POPUP (modal-ov/modal 재사용) ── */
+.panel { position:fixed; bottom:0; left:0; right:0; background:var(--bg); border-radius:20px 20px 0 0; padding:14px 18px max(24px,env(safe-area-inset-bottom)); z-index:540; transform:translateY(100%); transition:transform .28s cubic-bezier(.32,.72,0,1); max-height:88vh; overflow-y:auto; }
 .panel.on { transform:translateY(0); }
 .phandle { width:34px; height:4px; background:var(--line); border-radius:2px; margin:0 auto 16px; }
 .ptitle { font-size:13px; font-weight:700; margin-bottom:12px; }
@@ -686,7 +684,7 @@ body {
 
 <nav class="nav" style="display:none">
   <div class="nav-logo" id="navLogo">Novel<em>S</em></div>
-  <div style="position:absolute;left:50%;transform:translateX(-50%);font-size:11px;color:var(--ink3);background:var(--bg2);padding:2px 8px;border-radius:6px;font-weight:500">v1.1.6</div>
+  <div style="position:absolute;left:50%;transform:translateX(-50%);font-size:11px;color:var(--ink3);background:var(--bg2);padding:2px 8px;border-radius:6px;font-weight:500">v1.1.7</div>
   <div class="nav-user">
     <button class="nav-add" id="navAddBtn" onclick="openAdd()">＋ 소설 추가</button>
     <div class="nav-avatar" id="navAvatar" onclick="toggleUserMenu(event)"></div>
@@ -937,13 +935,15 @@ body {
   </div>
 </div>
 
-<!-- ── CHAPTER LIST ── -->
-<div class="ch-list-panel" id="chListPanel">
-  <div class="ch-list-header">
-    <button class="ch-close" onclick="closeChList()">←</button>
-    <div class="ch-list-header-title" id="chListTitle">챕터 목록</div>
+<!-- ── CHAPTER LIST POPUP ── -->
+<div class="modal-ov" id="chListOv" onclick="closeChList()"></div>
+<div class="modal" id="chListPanel">
+  <div class="mhandle"></div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+    <div class="ch-list-header-title" id="chListTitle" style="font-size:15px;font-weight:800">챕터 목록</div>
+    <button onclick="closeChList()" style="width:32px;height:32px;border-radius:50%;border:none;background:var(--bg2);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink2)">×</button>
   </div>
-  <div class="ch-list" id="chList"></div>
+  <div class="ch-list" id="chList" style="max-height:60vh;overflow-y:auto;margin:0 -18px;padding:0 18px"></div>
 </div>
 
 <!-- ── DETAIL ── -->
@@ -1009,13 +1009,16 @@ body {
   </div>
 </div>
 
-<!-- ── SETTINGS PANEL ── -->
-<div class="overlay" id="setOv" onclick="closePanel()"></div>
-<div class="panel" id="setPanel">
-  <div class="phandle"></div>
-  <div class="panel-header">
-    <span class="ptitle">읽기 설정</span>
-    <button class="preset-btn" onclick="resetSettings()">기본값 초기화</button>
+<!-- ── SETTINGS POPUP ── -->
+<div class="modal-ov" id="setOv" onclick="closePanel()"></div>
+<div class="modal" id="setPanel">
+  <div class="mhandle"></div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+    <span class="ptitle" style="margin:0;font-size:15px;font-weight:800">읽기 설정</span>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="preset-btn" onclick="resetSettings()">기본값 초기화</button>
+      <button onclick="closePanel()" style="width:32px;height:32px;border-radius:50%;border:none;background:var(--bg2);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink2)">×</button>
+    </div>
   </div>
 
   <!-- 미리보기 -->
@@ -1753,6 +1756,8 @@ function splitCh(txt) {
     const t = l.trim();
     if (!t) return false;
     if (t.length > 60) return false;
+    // 구분선(* * *, ---  등)은 챕터 구분자로 쓰지 않음 → 본문에 포함
+    if (/^[\*\-=─━\s·.]{3,}$/.test(t)) return false;
     return (
       // 제N장 / 제N편 / 제N화 / 제N권
       /^제\s*\d+\s*[장편화권]/.test(t) ||
@@ -1768,8 +1773,6 @@ function splitCh(txt) {
       /^\[?\(?\d{1,4}\)?\]?\s*$/.test(t) ||
       // 프롤로그 / 에필로그 / 후기 / 작가의 말 / 외전 / 번외
       /^(프롤로그|에필로그|후기|작가의\s*말|외전|번외|side\s*story|interlude)/i.test(t) ||
-      // 구분선: ─━=─ 등 5자 이상
-      /^[-=─━─\*\s]{5,}$/.test(t) ||
       // ★ ◆ ■ ◇ 등 특수문자로 시작하는 단독 짧은 줄
       /^[★◆■◇◈▶●○※]{1,3}\s*.{0,20}$/.test(t)
     );
@@ -1891,20 +1894,27 @@ window.openChList = function() {
   const n = novels.find(x=>x.id===curId); if(!n?._chs) return;
   document.getElementById('chListTitle').textContent = n.title;
   const list = document.getElementById('chList');
-  list.innerHTML = n._chs.map((ch,i) => `
-    <div class="ch-item ${i===curCh?'active':''}" onclick="jumpToCh(${i})">
+  list.innerHTML = n._chs.map((ch, i) => {
+    // 구분선(* * * 등)은 제목 없이 표시, 일반 챕터는 번호 표시
+    const isSep = /^[\*\-=─━•\s]{3,}$/.test(ch.title.trim());
+    const label = isSep ? `— ${i+1} —` : ch.title;
+    return `<div class="ch-item ${i===curCh?'active':''}" onclick="jumpToCh(${i})">
       <span class="ch-num">${i+1}</span>
-      <span class="ch-title">${escapeHtml(ch.title)}</span>
-      ${i<curCh ? '<span class="ch-check">✓</span>' : ''}
-    </div>`).join('');
+      <span class="ch-title">${escapeHtml(label)}</span>
+      ${i < curCh ? '<span class="ch-check">✓</span>' : ''}
+    </div>`;
+  }).join('');
+  document.getElementById('chListOv').classList.add('on');
   document.getElementById('chListPanel').classList.add('on');
-  // Scroll to current chapter
   setTimeout(() => {
     const active = list.querySelector('.active');
     if (active) active.scrollIntoView({block:'center'});
   }, 100);
 };
-window.closeChList = function() { document.getElementById('chListPanel').classList.remove('on'); };
+window.closeChList = function() {
+  document.getElementById('chListOv').classList.remove('on');
+  document.getElementById('chListPanel').classList.remove('on');
+};
 window.jumpToCh = function(i) {
   curCh = i; closeChList(); renderCh();
 };
@@ -2010,8 +2020,11 @@ const THEMES = {
 const SPEED_LABELS = { 1:'매우 느림', 2:'느림', 3:'보통', 4:'빠름', 5:'매우 빠름' };
 
 window.togglePanel = function() {
-  const open = document.getElementById('setPanel').classList.toggle('on');
-  document.getElementById('setOv').classList.toggle('on', open);
+  const panel = document.getElementById('setPanel');
+  const ov    = document.getElementById('setOv');
+  const open  = !panel.classList.contains('on');
+  panel.classList.toggle('on', open);
+  ov.classList.toggle('on', open);
   if (open) { syncSettingsUI(); clearTimeout(uiHideTimer); }
   else       { if (autoHide) setViewerUI(true); }
 };

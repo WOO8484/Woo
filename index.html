@@ -313,42 +313,42 @@ body {
 
 /* ── VIEWER ── */
 #viewer { display:none; flex-direction:column; position:fixed; inset:0; z-index:500; background:var(--bg); overflow:hidden; }
-.vn { display:none; }
-.vprog { position:fixed; top:0; left:0; right:0; height:3px; background:rgba(0,0,0,.1); z-index:510; }
-.vpfill { height:100%; background:var(--accent); transition:width .3s; }
-/* 페이지 고정 방식: 스크롤 없음, 화면 꽉 채움 */
-.vbody { flex:1; overflow:hidden; padding:48px 24px 32px; max-width:680px; margin:0 auto; width:100%; box-sizing:border-box; display:flex; flex-direction:column; }
-.vpage { flex:1; overflow:hidden; display:flex; flex-direction:column; }
-.vch { font-size:15px; font-weight:800; margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid var(--line); flex-shrink:0; }
-.vtext { font-size:17px; line-height:1.9; color:#2A2A2A; word-break:keep-all; transition:font-size .15s; flex:1; overflow:hidden; }
+/* 상단 진행바 제거 */
+.vprog { display:none; }
+.vpfill { height:100%; background:var(--accent); }
+/* 챕터 내 스크롤 가능 */
+.vbody { flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:52px 22px 80px; max-width:680px; margin:0 auto; width:100%; box-sizing:border-box; }
+.vpage { width:100%; }
+.vch { font-size:15px; font-weight:800; margin-bottom:20px; padding-bottom:14px; border-bottom:1px solid var(--line); color:var(--ink2); }
+.vtext { font-size:17px; line-height:1.9; color:#2A2A2A; word-break:keep-all; transition:font-size .15s; }
 .vtext p { margin-bottom:1.5em; }
 .vfoot { display:none; }
 
-/* 페이지 넘김 애니메이션 */
-@keyframes pageIn  { from { opacity:0; transform:translateX(30px);  } to { opacity:1; transform:translateX(0); } }
-@keyframes pageOut { from { opacity:0; transform:translateX(-30px); } to { opacity:1; transform:translateX(0); } }
-.vpage.anim-next { animation: pageIn  .18s ease; }
-.vpage.anim-prev { animation: pageOut .18s ease; }
+/* 챕터 넘김 애니메이션 */
+@keyframes chIn  { from { opacity:0; transform:translateX(24px);  } to { opacity:1; transform:translateX(0); } }
+@keyframes chOut { from { opacity:0; transform:translateX(-24px); } to { opacity:1; transform:translateX(0); } }
+.vpage.anim-next { animation: chIn  .2s ease; }
+.vpage.anim-prev { animation: chOut .2s ease; }
 
-/* 터치 영역 표시 (투명) */
-.vtap-left  { position:fixed; left:0; top:0; width:30%; height:100%; z-index:505; cursor:pointer; }
-.vtap-right { position:fixed; right:0; top:0; width:30%; height:100%; z-index:505; cursor:pointer; }
-.vtap-center{ position:fixed; left:30%; right:30%; top:0; height:100%; z-index:505; cursor:pointer; }
+/* 터치 영역 — 좌우만, 스크롤 방해 안 하도록 상하 중간 영역만 */
+.vtap-left  { position:fixed; left:0;   top:15%; height:70%; width:22%; z-index:505; cursor:pointer; }
+.vtap-right { position:fixed; right:0;  top:15%; height:70%; width:22%; z-index:505; cursor:pointer; }
+.vtap-center{ position:fixed; left:22%; right:22%; top:15%; height:70%; z-index:505; cursor:pointer; }
 
-/* 뷰어 팝업 (중앙) */
+/* 뷰어 팝업 */
 .vpopup-ov { position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:520; display:none; align-items:center; justify-content:center; }
 .vpopup-ov.on { display:flex; }
-.vpopup { background:#fff; border-radius:20px; padding:24px 20px; width:88%; max-width:360px; max-height:80vh; overflow-y:auto; }
-.vpopup-title { font-size:16px; font-weight:800; margin-bottom:4px; }
+.vpopup { background:#fff; border-radius:20px; padding:24px 20px 20px; width:88%; max-width:360px; }
+.vpopup-title { font-size:16px; font-weight:800; margin-bottom:4px; color:var(--ink); }
 .vpopup-info { font-size:12px; color:var(--ink3); margin-bottom:20px; }
-.vpopup-btns { display:flex; flex-direction:column; gap:10px; margin-bottom:20px; }
-.vpopup-btn { width:100%; height:56px; border-radius:12px; border:1px solid var(--line); background:#fff; font-size:15px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:14px; padding:0 18px; transition:background var(--tr); }
-.vpopup-btn span { font-size:24px; line-height:1; flex-shrink:0; }
+.vpopup-btns { display:flex; flex-direction:column; gap:10px; margin-bottom:16px; }
+.vpopup-btn { width:100%; height:54px; border-radius:12px; border:1px solid var(--line); background:#fff; font-size:15px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:14px; padding:0 18px; transition:background var(--tr); color:var(--ink); }
+.vpopup-btn span { font-size:22px; line-height:1; flex-shrink:0; }
 .vpopup-btn:hover { background:var(--bg2); }
-.vpopup-btn.danger { color:var(--danger); border-color:var(--danger-line); }
-.vpopup-close { width:100%; height:48px; border-radius:12px; background:var(--accent); color:#fff; border:none; font-size:15px; font-weight:700; cursor:pointer; }
-/* 챕터/페이지 표시 */
-.vpage-info { position:fixed; bottom:16px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,.45); color:#fff; font-size:11px; padding:5px 14px; border-radius:20px; z-index:506; pointer-events:none; white-space:nowrap; transition:opacity .3s; }
+.vpopup-btn.danger { color:var(--danger); border-color:var(--danger-line); background:#fff; }
+.vpopup-close { width:100%; height:50px; border-radius:12px; background:var(--accent); color:#fff; border:none; font-size:15px; font-weight:700; cursor:pointer; }
+/* 하단 챕터 표시 제거 */
+.vpage-info { display:none; }
 
 /* Tap hint */
 .tap-hint { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(0,0,0,.6); color:#fff; font-size:12px; padding:8px 16px; border-radius:20px; pointer-events:none; opacity:0; transition:opacity .3s; z-index:60; white-space:nowrap; }
@@ -688,7 +688,7 @@ body {
 
 <nav class="nav" style="display:none">
   <div class="nav-logo" id="navLogo">Novel<em>S</em></div>
-  <div style="position:absolute;left:50%;transform:translateX(-50%);font-size:11px;color:var(--ink3);background:var(--bg2);padding:2px 8px;border-radius:6px;font-weight:500">v1.1.2</div>
+  <div style="position:absolute;left:50%;transform:translateX(-50%);font-size:11px;color:var(--ink3);background:var(--bg2);padding:2px 8px;border-radius:6px;font-weight:500">v1.1.3</div>
   <div class="nav-user">
     <button class="nav-add" id="navAddBtn" onclick="openAdd()">＋ 소설 추가</button>
     <div class="nav-avatar" id="navAvatar" onclick="toggleUserMenu(event)"></div>
@@ -916,19 +916,16 @@ body {
 
 <!-- ── VIEWER ── -->
 <div id="viewer">
-  <div class="vprog" id="vprogBar"><div class="vpfill" id="vpFill" style="width:0%"></div></div>
   <div class="vbody" id="vBody" onscroll="onVScroll()">
     <div class="vpage" id="vPage">
       <div class="vch" id="vChTitle"></div>
       <div class="vtext" id="vText"></div>
     </div>
   </div>
-  <!-- 터치 영역 -->
+  <!-- 터치 영역: 좌/중/우, 스크롤 방해 안 하도록 상하 15% 제외 -->
   <div class="vtap-left"   onclick="prevCh()"></div>
   <div class="vtap-right"  onclick="nextCh()"></div>
   <div class="vtap-center" onclick="openViewerPopup()"></div>
-  <!-- 페이지 정보 -->
-  <div class="vpage-info" id="vPageInfo"></div>
 </div>
 
 <!-- 뷰어 팝업 (중앙 탭 시) -->
@@ -1885,10 +1882,7 @@ window.openViewer = async function(id) {
 // ── 뷰어 팝업 (중앙 탭) ──
 function setViewerUI(visible) {
   uiVisible = visible;
-  const bar = document.getElementById('vprogBar');
-  const info = document.getElementById('vPageInfo');
-  if (bar)  bar.style.opacity  = visible ? '1' : '0';
-  if (info) info.style.opacity = visible ? '1' : '0';
+  // 진행바 제거됨 — 추후 확장용
 }
 function resetHideTimer() {
   if (!autoHide) return;
@@ -1897,7 +1891,7 @@ function resetHideTimer() {
   uiHideTimer = setTimeout(() => setViewerUI(false), hideDelay * 1000);
 }
 // 뷰어 터치 시 UI 복원
-document.getElementById('viewer').addEventListener('touchstart', resetHideTimer, { passive: true });
+document.getElementById('vBody').addEventListener('touchstart', resetHideTimer, { passive: true });
 window.openViewerPopup = function() {
   const n = novels.find(x=>x.id===curId); if(!n) return;
   document.getElementById('vpopupTitle').textContent = n.title;
@@ -1937,11 +1931,10 @@ function renderCh() {
   if(!n?._chs) return;
 
   const ch = n._chs[curCh];
-  document.getElementById('vChTitle').textContent = ch.title;
-  // 단일 챕터면 챕터 제목 숨김
-  document.getElementById('vChTitle').style.display = n._chs.length === 1 ? 'none' : '';
-  document.getElementById('vPageInfo').textContent =
-    n._chs.length > 1 ? `${curCh+1} / ${n._chs.length} 챕터` : '본문';
+  // 단일 챕터면 제목 숨김
+  const vChTitle = document.getElementById('vChTitle');
+  vChTitle.textContent = ch.title;
+  vChTitle.style.display = n._chs.length === 1 ? 'none' : '';
 
   const paras = ch.content.split(/\n{2,}/).filter(p=>p.trim());
   const vText = document.getElementById('vText');
@@ -1949,19 +1942,19 @@ function renderCh() {
     ? paras.map(p => `<p>${escapeHtml(p).replace(/\n/g,'<br>')}</p>`).join('')
     : `<p style="color:var(--ink3);font-style:italic">(내용 없음)</p>`;
 
-  // 페이지 넘김 애니메이션
+  // 챕터 넘김 애니메이션 + 스크롤 맨 위로
   const vPage = document.getElementById('vPage');
+  const vBody = document.getElementById('vBody');
   vPage.classList.remove('anim-next', 'anim-prev');
   requestAnimationFrame(() => {
     vPage.classList.add(_animDir === 'next' ? 'anim-next' : 'anim-prev');
+    vBody.scrollTop = 0;
   });
 
-  // 진행률: 챕터 위치 기반
+  // 진행률 저장
   const pct = n._chs.length > 1
-    ? Math.round(((curCh + 1) / n._chs.length) * 100)
+    ? Math.round((curCh / (n._chs.length - 1)) * 100)
     : (n.progress || 1);
-  document.getElementById('vpFill').style.width = pct + '%';
-
   n.progress = pct;
   if (!n._shared) {
     updateDoc(doc(db, 'users', currentUser.uid, 'novels', curId), {
@@ -1973,7 +1966,7 @@ function renderCh() {
   if (autoHide) resetHideTimer();
 }
 
-// 페이지 방식 — onVScroll 미사용 (스크롤 없음)
+// 스크롤 이벤트 — onVScroll 미사용
 window.onVScroll = function() {};
 
 let _animDir = 'next';
@@ -1982,7 +1975,7 @@ window.nextCh = function() {
   if (curCh < n._chs.length - 1) {
     _animDir = 'next'; curCh++; renderCh();
   } else {
-    // 마지막 챕터 끝 → 완독
+    // 마지막 챕터에서 오른쪽 탭 → 완독
     if (!n._shared) updateDoc(doc(db,'users',currentUser.uid,'novels',curId),{progress:100}).catch(()=>{});
     n.progress = 100; renderHome(); renderProfile();
     showToast('🎉 완독을 축하드려요!');
@@ -2013,17 +2006,16 @@ document.addEventListener('keydown', e => {
   }
 });
 
-// Swipe gesture (페이지 방식 — viewer 전체 영역)
+// 스와이프 제스처 — 수평 스와이프만 챕터 이동, 수직은 스크롤
 let touchStartX = 0, touchStartY = 0;
-document.getElementById('viewer').addEventListener('touchstart', e => {
+document.getElementById('vBody').addEventListener('touchstart', e => {
   touchStartX = e.touches[0].clientX;
   touchStartY = e.touches[0].clientY;
 }, {passive:true});
-document.getElementById('viewer').addEventListener('touchend', e => {
+document.getElementById('vBody').addEventListener('touchend', e => {
   const dx = e.changedTouches[0].clientX - touchStartX;
   const dy = e.changedTouches[0].clientY - touchStartY;
-  // 수평 스와이프만 처리 (수직 이동이 더 크면 무시)
-  if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) {
+  if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 2) {
     dx < 0 ? nextCh() : prevCh();
   }
 }, {passive:true});

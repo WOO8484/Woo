@@ -33,7 +33,6 @@ body {
 
 /* ── NAV ── */
 .nav { position:sticky; top:0; z-index:100; background:#fff; border-bottom:1px solid var(--line); height:54px; padding:0 16px; display:flex; align-items:center; gap:10px; }
-}
 .nav-logo { font-size:18px; font-weight:900; letter-spacing:-.5px; margin-right:auto; color:var(--ink); }
 .nav-logo em { color:var(--accent); font-style:normal; }
 .nav-logo span { color:var(--ink3); font-weight:400; font-size:12px; margin-left:4px; letter-spacing:0; }
@@ -42,7 +41,6 @@ body {
 
 /* ── STATS TABS ── */
 .stats { display:flex; border-bottom:1px solid var(--line); background:#fff; }
-}
 .stat { flex:1; padding:14px 0; text-align:center; border-right:1px solid var(--line); cursor:pointer; position:relative; transition:background var(--tr); }
 .stat:last-child { border-right:none; }
 .stat::after { content:''; position:absolute; bottom:0; left:50%; right:50%; height:2px; background:var(--accent); transition:left .2s,right .2s; }
@@ -61,7 +59,6 @@ body {
 .sort-btn { height:40px; padding:0 12px; border:1px solid var(--line); border-radius:var(--r); background:var(--bg2); font-size:12px; font-weight:600; color:var(--ink2); cursor:pointer; white-space:nowrap; }
 .sort-btn:hover { border-color:var(--accent); }
 .sort-menu { position:absolute; right:0; top:44px; background:#fff; border:1px solid var(--line); border-radius:var(--r); box-shadow:var(--sh2); min-width:150px; overflow:hidden; z-index:50; display:none; }
-}
 .sort-menu.open { display:block; }
 .sort-item { padding:11px 16px; font-size:13px; cursor:pointer; display:flex; justify-content:space-between; }
 .sort-item:hover { background:var(--bg2); }
@@ -71,7 +68,6 @@ body {
 .filter { display:flex; gap:7px; padding:10px 16px; overflow-x:auto; scrollbar-width:none; }
 .filter::-webkit-scrollbar { display:none; }
 .chip { padding:5px 13px; border-radius:20px; font-size:12px; font-weight:600; border:1px solid var(--line); background:#fff; color:var(--ink2); cursor:pointer; white-space:nowrap; transition:all var(--tr); }
-}
 .chip:hover { border-color:var(--accent); color:var(--accent); }
 .chip.on { background:var(--accent); color:#fff; border-color:var(--accent); }
 
@@ -79,7 +75,6 @@ body {
 .recent-scroll { display:flex; gap:10px; padding:0 16px 16px; overflow-x:auto; scrollbar-width:none; }
 .recent-scroll::-webkit-scrollbar { display:none; }
 .rc { flex-shrink:0; width:240px; border:1px solid var(--line); border-radius:var(--r2); padding:11px; display:flex; gap:10px; cursor:pointer; background:#fff; transition:box-shadow var(--tr),transform var(--tr); }
-}
 .rc:hover { box-shadow:var(--sh2); transform:translateY(-2px); }
 .rc-thumb { width:44px; height:58px; border-radius:7px; flex-shrink:0; overflow:hidden; position:relative; }
 .rc-thumb img { width:100%; height:100%; object-fit:cover; }
@@ -180,7 +175,6 @@ body {
 /* ── VIEWER ── */
 #viewer { display:none; flex-direction:column; height:100vh; overflow:hidden; }
 .vn { position:relative; z-index:50; background:rgba(255,255,255,.97); backdrop-filter:blur(12px); border-bottom:1px solid var(--line); height:50px; padding:0 14px; display:flex; align-items:center; gap:10px; transition:transform .28s cubic-bezier(.32,.72,0,1),opacity .28s; }
-}
 .vn.hidden { transform:translateY(-100%); opacity:0; pointer-events:none; }
 .vback { width:30px; height:30px; border-radius:8px; border:1px solid var(--line); background:var(--bg); cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center; color:var(--ink); }
 .vtw { flex:1; overflow:hidden; }
@@ -195,7 +189,6 @@ body {
 .vtext { font-size:17px; line-height:1.9; color:#2A2A2A; word-break:keep-all; transition:font-size .15s; }
 .vtext p { margin-bottom:1.5em; }
 .vfoot { position:relative; background:rgba(255,255,255,.97); backdrop-filter:blur(12px); border-top:1px solid var(--line); padding:9px 14px; display:flex; gap:8px; z-index:50; flex-shrink:0; transition:transform .28s cubic-bezier(.32,.72,0,1),opacity .28s; }
-}
 .vfoot.hidden { transform:translateY(100%); opacity:0; pointer-events:none; }
 .vbtn { flex:1; height:38px; border-radius:8px; border:1px solid var(--line); background:var(--bg); font-size:12px; font-weight:600; color:var(--ink2); cursor:pointer; transition:border-color var(--tr),color var(--tr); }
 .vbtn:hover { border-color:var(--accent); color:var(--accent); }
@@ -274,7 +267,6 @@ body {
 
 /* White card body */
 .dbody { background:#fff; border-radius:20px 20px 0 0; margin-top:-16px; padding:20px 16px 24px; position:relative; z-index:2; }
- }
 
 /* Stats row */
 .dstats { display:flex; gap:0; margin-bottom:20px; padding-bottom:18px; border-bottom:1px solid var(--line); }
@@ -302,8 +294,7 @@ body {
 .ddel:hover { color:var(--danger); }
 
 /* Fixed bottom read button */
-.dfoot { position:absolute; bottom:0; left:0; right:0; padding:10px 16px max(10px, env(safe-area-inset-bottom)); background:rgba(255,255,255,.97); backdrop-filter:blur(12px); border-top:1px solid var(--line); z-index:10; }
- }
+.dfoot { position:fixed; bottom:0; left:0; right:0; padding:10px 16px max(10px, env(safe-area-inset-bottom)); background:rgba(255,255,255,.97); backdrop-filter:blur(12px); border-top:1px solid var(--line); z-index:10; }
 .dread { width:100%; height:50px; background:var(--accent); color:#fff; border:none; border-radius:14px; font-size:16px; font-weight:800; cursor:pointer; transition:opacity var(--tr),transform var(--tr); box-shadow:0 4px 16px rgba(108,92,231,.35); }
 .dread:hover { opacity:.9; transform:translateY(-1px); }
 
@@ -1024,7 +1015,7 @@ window.openDetail = function(id) {
   // Stats
   document.getElementById('dStats').innerHTML = `
     <div class="dstat"><span class="dstat-v a">${pct}%</span><span class="dstat-k">진행률</span></div>
-    <div class="dstat"><span class="dstat-v">${pages||'-'}p</span><span class="dstat-k">분량</span></div>
+    <div class="dstat"><span class="dstat-v">${pages > 0 ? pages+'p' : '?p'}</span><span class="dstat-k">분량</span></div>
     <div class="dstat"><span class="dstat-v">${n.lastReadAt?ago(n.lastReadAt):'-'}</span><span class="dstat-k">마지막 읽기</span></div>`;
 
   // Synopsis (truncate to 100 chars with "더 보기")

@@ -714,8 +714,8 @@ body {
     <div class="home-continue" id="homeContinue"></div>
   </div>
 
-  <!-- 소설 추가 배너 -->
-  <div class="home-banner" onclick="openAdd()">
+  <!-- 소설 추가 배너 (관리자만 표시) -->
+  <div class="home-banner" id="homeBanner" style="display:none" onclick="openAdd()">
     <div class="home-banner-text">
       <div class="home-banner-title">새 소설 추가하기</div>
       <div class="home-banner-sub">TXT 파일을 업로드해보세요</div>
@@ -736,8 +736,7 @@ body {
   <div class="home-empty" id="homeEmpty" style="display:none">
     <div class="home-empty-icon">📚</div>
     <div class="home-empty-t">서재가 비어있어요</div>
-    <div class="home-empty-s">TXT 파일을 추가해서<br>독서를 시작해보세요!</div>
-    <button class="home-empty-btn" onclick="openAdd()">첫 소설 추가하기</button>
+    <div class="home-empty-s">관리자가 소설을 추가하면<br>여기에 표시됩니다</div>
   </div>
 </div>
 

@@ -367,7 +367,7 @@ async function loadNovels() {
   } catch(e) {
     console.error(e);
     toast('데이터 불러오기 실패: ' + e.message);
-    document.getElementById('grid').innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div><div class="empty-t">데이터를 불러올 수 없어요</div><div class="empty-s">'+e.message+'</div></div>';
+    document.getElementById('grid').innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div><div class="empty-t">데이터를 불러올 수 없어요</div><div class="empty-s">'+escapeHtml(e.message)+'</div></div>';
   }
 }
 
@@ -401,10 +401,10 @@ window.render = function() {
     recSec.style.display='block';
     document.getElementById('recentScroll').innerHTML = inProg.map(n=>`
       <div class="rc" onclick="openDetail('${n.id}')">
-        <div class="rc-thumb">${n.coverUrl?`<img src="${n.coverUrl}" alt="">`:'<div class="rc-stripe"></div>'}</div>
+        <div class="rc-thumb">${n.coverUrl?`<img src="${escapeHtml(n.coverUrl)}" alt="">`:'<div class="rc-stripe"></div>'}</div>
         <div class="rc-info">
-          <div class="rc-title">${n.title}</div>
-          <div class="rc-author">${n.author||'작자 미상'}</div>
+          <div class="rc-title">${escapeHtml(n.title)}</div>
+          <div class="rc-author">${escapeHtml(n.author||'작자 미상')}</div>
           <div class="rc-pb"><div class="rc-pf" style="width:${n.progress}%"></div></div>
           <div class="rc-pt"><span>진행률</span><span>${n.progress}%</span></div>
           <button class="rc-btn" onclick="event.stopPropagation();openViewer('${n.id}')">이어 읽기</button>
@@ -417,14 +417,14 @@ window.render = function() {
   grid.innerHTML = list.map(n=>`
     <div class="card" onclick="openDetail('${n.id}')">
       <div class="cover-wrap">
-        ${n.coverUrl?`<img src="${n.coverUrl}" alt="">`:`<div class="cover-pat"></div><div class="cover-stripe"></div>`}
+        ${n.coverUrl?`<img src="${escapeHtml(n.coverUrl)}" alt="">`:`<div class="cover-pat"></div><div class="cover-stripe"></div>`}
         ${n.progress>=100?'<div class="done-badge">완독</div>':''}
         ${n.progress>0&&n.progress<100?`<div class="pct-badge">${n.progress}%</div>`:''}
-        <div class="cover-grad"><div class="cover-title">${n.title}</div></div>
+        <div class="cover-grad"><div class="cover-title">${escapeHtml(n.title)}</div></div>
       </div>
       <div class="prog"><div class="prog-fill" style="width:${n.progress}%"></div></div>
       <div class="card-meta">
-        <div class="card-title">${n.title}</div>
+        <div class="card-title">${escapeHtml(n.title)}</div>
         <div class="card-sub"><span>${LABELS[n.genre]||'기타'}</span><span>${n.progress===100?'완독':n.progress>0?n.progress+'%':'미시작'}</span></div>
       </div>
     </div>`).join('');
@@ -460,7 +460,7 @@ window.openDetail = function(id){
     <div class="dstat"><span class="dstat-v">${pages||'-'}p</span><span class="dstat-k">분량</span></div>
     <div class="dstat"><span class="dstat-v">${n.lastReadAt?ago(n.lastReadAt):'-'}</span><span class="dstat-k">마지막 읽기</span></div>`;
   document.getElementById('dSyn').textContent=n.synopsis||'줄거리 없음';
-  document.getElementById('dTags').innerHTML=(n.tags||[]).map(t=>`<span class="dtag">${t}</span>`).join('');
+  document.getElementById('dTags').innerHTML=(n.tags||[]).map(t=>`<span class="dtag">${escapeHtml(t)}</span>`).join('');
   document.getElementById('dReadBtn').textContent=n.progress>0&&n.progress<100?'이어 읽기':n.progress>=100?'다시 읽기':'처음부터 읽기';
   document.getElementById('dDlBtn').style.display=n.filePath?'block':'none';
   document.getElementById('detail').classList.add('on');
@@ -523,7 +523,7 @@ function renderCh(){
   document.getElementById('vChTitle').textContent=ch.title;
   document.getElementById('vInfo').textContent=`${curCh+1} / ${n._chs.length}챕터`;
   const paras=ch.content.split(/\n\n+/).filter(p=>p.trim());
-  document.getElementById('vText').innerHTML=paras.map(p=>`<p>${p.replace(/\n/g,'<br>')}</p>`).join('');
+  document.getElementById('vText').innerHTML=paras.map(p=>`<p>${escapeHtml(p).replace(/\n/g,'<br>')}</p>`).join('');
   document.getElementById('vText').style.fontSize=fontSize+'px';
   document.getElementById('vBody').scrollTop=0;
   const pct=Math.round(((curCh+1)/n._chs.length)*100);
@@ -628,10 +628,10 @@ window.doSearch = async function(){
       const info=item.volumeInfo;
       const img=info.imageLinks?.thumbnail||'';
       return `<div class="sresult" onclick="pickBook(${i})">
-        ${img?`<img src="${img}" alt="">`:''}
+        ${img?`<img src="${escapeHtml(img)}" alt="">`:''}
         <div class="sresult-info">
-          <div class="sresult-t">${info.title}</div>
-          <div class="sresult-a">${(info.authors||[]).join(', ')}</div>
+          <div class="sresult-t">${escapeHtml(info.title)}</div>
+          <div class="sresult-a">${escapeHtml((info.authors||[]).join(', '))}</div>
         </div>
         <span class="sresult-sel">선택</span>
       </div>`;
@@ -694,6 +694,15 @@ window.saveNovel = async function(){
 }
 
 // ── UTILS ──
+function escapeHtml(str){
+  if(str===null||str===undefined) return '';
+  return String(str)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
 function ago(d){ const m=Math.floor((Date.now()-new Date(d))/60000); if(m<60)return m+'분 전'; if(m<1440)return Math.floor(m/60)+'시간 전'; if(m<43200)return Math.floor(m/1440)+'일 전'; return Math.floor(m/43200)+'개월 전'; }
 let toastT;
 window.toast = function(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('on'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('on'),2200); }

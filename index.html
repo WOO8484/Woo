@@ -516,7 +516,7 @@ body {
 /* ── MODAL ── */
 .modal-ov { position:fixed; inset:0; background:rgba(0,0,0,.3); z-index:150; opacity:0; pointer-events:none; transition:opacity .2s; }
 .modal-ov.on { opacity:1; pointer-events:all; }
-.modal { position:fixed; bottom:0; left:0; right:0; background:var(--bg); border-radius:20px 20px 0 0; padding:14px 18px 34px; z-index:200; transform:translateY(100%); transition:transform .28s cubic-bezier(.32,.72,0,1); max-height:92vh; overflow-y:auto; }
+.modal { position:fixed; bottom:0; left:0; right:0; background:var(--bg); border-radius:20px 20px 0 0; padding:14px 18px max(34px,env(safe-area-inset-bottom)); z-index:200; transform:translateY(100%); transition:transform .28s cubic-bezier(.32,.72,0,1); max-height:94vh; overflow-y:auto; }
 .modal.on { transform:translateY(0); }
 .mhandle { width:34px; height:4px; background:var(--line); border-radius:2px; margin:0 auto 16px; }
 .mtitle { font-size:15px; font-weight:800; margin-bottom:16px; }
@@ -532,7 +532,7 @@ body {
 .gchips { display:flex; flex-wrap:wrap; gap:5px; }
 .gchip { padding:4px 11px; border-radius:20px; font-size:11px; font-weight:600; border:1px solid var(--line); background:var(--bg); color:var(--ink2); cursor:pointer; transition:all var(--tr); }
 .gchip.on { background:var(--accent); color:#fff; border-color:var(--accent); }
-.dropz { border:1.5px dashed var(--line); border-radius:var(--r); padding:18px; text-align:center; cursor:pointer; position:relative; background:var(--bg2); transition:border-color var(--tr),background var(--tr); }
+.dropz { border:1.5px dashed var(--line); border-radius:var(--r); padding:18px; text-align:center; cursor:pointer; position:relative; background:var(--bg2); transition:border-color var(--tr),background var(--tr); display:block; overflow:hidden; }
 .dropz:hover,.dropz.dragover { border-color:var(--accent); background:var(--accent2); }
 .dropz input { position:absolute; inset:0; opacity:0; cursor:pointer; }
 .dropz-icon { font-size:20px; margin-bottom:5px; }
@@ -541,7 +541,7 @@ body {
 .msave { width:100%; height:44px; background:var(--accent); color:#fff; border:none; border-radius:var(--r); font-size:13px; font-weight:700; cursor:pointer; margin-top:6px; transition:opacity var(--tr),transform var(--tr); }
 .msave:hover { opacity:.85; transform:translateY(-1px); }
 .msave:disabled { opacity:.5; cursor:not-allowed; transform:none; }
-.sresults { border:1px solid var(--line); border-radius:var(--r); overflow:hidden; margin-top:7px; }
+.sresults { border:1px solid var(--line); border-radius:var(--r); overflow-y:auto; margin-top:7px; max-height:300px; }
 .sresult { display:flex; gap:9px; padding:9px 11px; cursor:pointer; border-bottom:1px solid var(--line); align-items:center; transition:background var(--tr); }
 .sresult:last-child { border-bottom:none; }
 .sresult:hover { background:var(--bg2); }
@@ -610,6 +610,24 @@ body {
 
 /* Swipe hint */
 @keyframes swipeLeft { 0%,100%{transform:translateX(0)} 50%{transform:translateX(-8px)} }
+
+/* ── iPhone 대형 화면 대응 ── */
+@media (min-width: 390px) {
+  .nav { height:58px; }
+  .tab-bar { height:64px; padding-bottom:max(8px,env(safe-area-inset-bottom)); }
+  .tab-icon { font-size:24px; }
+  .tab-label { font-size:11px; }
+  .home-greeting { font-size:24px; }
+  .home-stat-val { font-size:24px; }
+  .card-title { font-size:13px; }
+  .sn { font-size:22px; }
+  .shelf-tab { font-size:14px; padding:15px 18px; }
+  .profile-hero-name { font-size:20px; }
+  .profile-stat-val { font-size:22px; }
+  .dh-title { font-size:22px; }
+  .dread { height:56px; font-size:18px; }
+  .auth-google { height:56px; font-size:16px; }
+}
 </style>
 </head>
 <body>
@@ -1120,16 +1138,15 @@ body {
   </div>
   <div class="mfield">
     <label class="mlabel">TXT 파일</label>
-    <input type="file" accept=".txt" id="fileInput" style="display:none" onchange="onFile(event)">
-    <div class="dropz" id="dropzLabel"
-      onclick="document.getElementById('fileInput').click()"
+    <label class="dropz" id="dropzLabel"
       ondragover="event.preventDefault();this.classList.add('dragover')"
       ondragleave="this.classList.remove('dragover')"
       ondrop="onFileDrop(event)">
+      <input type="file" accept=".txt" id="fileInput" onchange="onFile(event)" style="position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;z-index:1">
       <div class="dropz-icon">📄</div>
       <div class="dropz-t" id="fileLabel">클릭하거나 파일을 드래그하세요</div>
       <div class="dropz-s">.txt 파일만 지원</div>
-    </div>
+    </label>
   </div>
   <div class="mfield"><label class="mlabel">줄거리</label><textarea class="mtarea" id="iSyn" placeholder="간단한 줄거리나 메모..."></textarea></div>
   <div class="mfield"><label class="mlabel">태그 (쉼표 구분)</label><input class="minput" id="iTags" placeholder="판타지, 로맨스, 해피엔딩"></div>

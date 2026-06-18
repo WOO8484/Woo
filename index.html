@@ -126,6 +126,7 @@ body {
 
 /* 홈 최근 추가 */
 .home-recent-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; padding:0 16px; }
+.home-recent-grid .cover-wrap { aspect-ratio:2/3 !important; }
 
 /* 홈 빈 상태 */
 .home-empty { text-align:center; padding:48px 20px; color:var(--ink3); }
@@ -676,7 +677,7 @@ body {
 </div>
 
 <nav class="nav" style="display:none">
-  <div class="nav-logo" id="navLogo">Novel<em>S</em><span class="nav-version">v1.0.3</span></div>
+  <div class="nav-logo" id="navLogo">Novel<em>S</em><span class="nav-version">v1.0.4</span></div>
   <div class="nav-user">
     <button class="nav-add" id="navAddBtn" onclick="openAdd()">＋ 소설 추가</button>
     <div class="nav-avatar" id="navAvatar" onclick="toggleUserMenu(event)"></div>
@@ -2331,13 +2332,15 @@ onAuthStateChanged(auth, user => {
   currentUser = user;
   if (user) {
     document.getElementById('authScreen').style.display = 'none';
+    document.getElementById('waitScreen').style.display = 'none';
     checkUserApproval(user);
   } else {
     document.getElementById('authScreen').style.display = 'flex';
+    document.getElementById('waitScreen').style.display = 'none';
     document.querySelector('.nav').style.display = 'none';
     document.getElementById('tabBar').style.display = 'none';
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    novels = [];
+    novels = []; isAdmin = false;
   }
 });
 

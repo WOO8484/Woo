@@ -250,48 +250,82 @@ body { font-family:-apple-system,'Apple SD Gothic Neo',BlinkMacSystemFont,'Noto 
 .lh-slider::-webkit-slider-thumb { -webkit-appearance:none; appearance:none; width:16px; height:16px; border-radius:50%; background:var(--accent); cursor:pointer; }
 
 /* ── DETAIL ── */
-.detail { position:fixed; inset:0; background:var(--bg); z-index:200; overflow-y:auto; transform:translateY(100%); transition:transform .28s cubic-bezier(.32,.72,0,1); }
+.detail { position:fixed; inset:0; background:var(--bg); z-index:200; display:flex; flex-direction:column; transform:translateY(100%); transition:transform .28s cubic-bezier(.32,.72,0,1); }
 .detail.on { transform:translateY(0); }
 
-/* Top bar with back button */
-.dbar { position:sticky; top:0; z-index:10; display:flex; align-items:center; justify-content:space-between; padding:0 14px; height:50px; background:rgba(255,255,255,.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--line); }
-@media(prefers-color-scheme:dark){ .dbar { background:rgba(17,17,17,.95); } }
-.dbar-back { width:32px; height:32px; border-radius:8px; border:1px solid var(--line); background:var(--bg); cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center; color:var(--ink); }
-.dbar-title { font-size:14px; font-weight:700; flex:1; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding:0 10px; }
-.dbar-space { width:32px; }
+/* Scrollable content area */
+.detail-scroll { flex:1; overflow-y:auto; padding-bottom:90px; }
 
-/* Cover section */
-.dcover-wrap { width:100%; background:var(--cover); position:relative; overflow:hidden; }
-.dcover-wrap img { width:100%; display:block; object-fit:cover; }
-.dcover-placeholder { width:100%; aspect-ratio:3/2; display:flex; align-items:center; justify-content:center; font-size:56px; }
-.dcover-grad { position:absolute; bottom:0; left:0; right:0; padding:32px 16px 16px; background:linear-gradient(to top,rgba(0,0,0,.75) 0%,transparent 100%); }
-.dh-title  { font-size:20px; font-weight:800; color:#fff; margin-bottom:3px; line-height:1.3; }
-.dh-author { font-size:13px; color:rgba(255,255,255,.8); }
+/* Top bar — transparent over hero bg */
+.dbar { position:absolute; top:0; left:0; right:0; z-index:10; display:flex; align-items:center; justify-content:space-between; padding:0 14px; height:50px; }
+.dbar-back { width:34px; height:34px; border-radius:50%; background:rgba(0,0,0,.25); border:none; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; color:#fff; backdrop-filter:blur(4px); }
 
-.dbody { padding:16px 16px 40px; }
-.dstats { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:18px; }
-.dstat { border:1px solid var(--line); border-radius:var(--r); padding:11px; text-align:center; }
-.dstat-v { font-size:16px; font-weight:800; display:block; }
+/* Hero section — genre-color bg, cover left / info right */
+.dhero-section { position:relative; padding:56px 16px 0; min-height:220px; display:flex; align-items:flex-end; gap:14px; }
+.dhero-bg { position:absolute; inset:0; }
+.dhero-bg-blur { position:absolute; inset:0; opacity:.35; background-size:cover; background-position:center; filter:blur(20px) brightness(.8); }
+.dhero-bg-color { position:absolute; inset:0; }
+.dhero-bg-grad { position:absolute; inset:0; background:linear-gradient(to bottom, transparent 40%, rgba(0,0,0,.55) 100%); }
+
+/* Cover thumbnail */
+.dcover-img-wrap { flex-shrink:0; width:110px; height:148px; border-radius:10px; overflow:hidden; box-shadow:0 6px 20px rgba(0,0,0,.35); position:relative; z-index:1; margin-bottom:16px; }
+.dcover-img-wrap img { width:100%; height:100%; object-fit:cover; display:block; }
+.dcover-img-placeholder { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:36px; }
+
+/* Title/info beside cover */
+.dhero-info { flex:1; padding-bottom:18px; position:relative; z-index:1; }
+.dh-title  { font-size:18px; font-weight:800; color:#fff; line-height:1.35; margin-bottom:6px; text-shadow:0 1px 4px rgba(0,0,0,.4); }
+.dh-author { font-size:13px; color:rgba(255,255,255,.85); margin-bottom:8px; }
+.dh-meta   { font-size:11px; color:rgba(255,255,255,.7); display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+.dh-meta-dot { opacity:.5; }
+.dh-progress { margin-top:10px; }
+.dh-prog-bar { height:3px; background:rgba(255,255,255,.25); border-radius:2px; overflow:hidden; margin-bottom:3px; }
+.dh-prog-fill { height:100%; background:#fff; border-radius:2px; transition:width .4s; }
+.dh-prog-text { font-size:10px; color:rgba(255,255,255,.8); font-weight:600; }
+
+/* White card body */
+.dbody { background:#fff; border-radius:20px 20px 0 0; margin-top:-16px; padding:20px 16px 24px; position:relative; z-index:2; }
+@media(prefers-color-scheme:dark){ .dbody { background:#1C1C1C; } }
+
+/* Stats row */
+.dstats { display:flex; gap:0; margin-bottom:20px; padding-bottom:18px; border-bottom:1px solid var(--line); }
+.dstat { flex:1; text-align:center; position:relative; }
+.dstat + .dstat::before { content:''; position:absolute; left:0; top:15%; bottom:15%; width:1px; background:var(--line); }
+.dstat-v { font-size:17px; font-weight:800; display:block; color:var(--ink); }
 .dstat-v.a { color:var(--accent); }
-.dstat-k { font-size:9px; color:var(--ink3); margin-top:2px; display:block; }
-.dsec { font-size:12px; font-weight:700; margin-bottom:7px; color:var(--ink2); }
-.dsyn { font-size:13px; line-height:1.7; color:var(--ink2); margin-bottom:16px; }
-.dtags { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:20px; }
-.dtag { padding:3px 9px; border-radius:20px; font-size:11px; font-weight:600; background:var(--bg2); color:var(--ink2); border:1px solid var(--line); }
-.dread { width:100%; height:48px; background:var(--accent); color:#fff; border:none; border-radius:var(--r); font-size:15px; font-weight:700; cursor:pointer; margin-bottom:10px; transition:opacity var(--tr),transform var(--tr); }
-.dread:hover { opacity:.85; transform:translateY(-1px); }
-.ddl { width:100%; height:42px; background:var(--bg); color:var(--accent); border:1px solid var(--accent); border-radius:var(--r); font-size:13px; font-weight:700; cursor:pointer; margin-bottom:20px; transition:background var(--tr); }
+.dstat-k { font-size:10px; color:var(--ink3); margin-top:3px; display:block; }
+
+/* Synopsis */
+.dsec { font-size:13px; font-weight:700; margin-bottom:8px; color:var(--ink); }
+.dsyn { font-size:13px; line-height:1.75; color:var(--ink2); margin-bottom:18px; }
+.dsyn-more { color:var(--accent); font-size:13px; font-weight:600; cursor:pointer; margin-left:4px; }
+
+/* Tags */
+.dtags { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:24px; }
+.dtag { padding:4px 11px; border-radius:20px; font-size:12px; font-weight:600; background:var(--bg2); color:var(--ink2); border:1px solid var(--line); }
+
+/* Download link */
+.ddl { width:100%; height:40px; background:var(--bg); color:var(--accent); border:1px solid var(--accent); border-radius:var(--r); font-size:13px; font-weight:700; cursor:pointer; margin-bottom:12px; transition:background var(--tr); display:none; }
 .ddl:hover { background:var(--accent2); }
 
-/* Delete button — simple, no danger zone toggle */
-.ddel { width:100%; height:40px; background:var(--bg); color:var(--ink3); border:1px solid var(--line); border-radius:var(--r); font-size:12px; font-weight:600; cursor:pointer; transition:color var(--tr),border-color var(--tr),background var(--tr); }
-.ddel:hover { color:var(--danger); border-color:var(--danger-line); background:var(--danger2); }
+/* Delete button */
+.ddel { width:100%; height:38px; background:none; color:var(--ink3); border:none; font-size:12px; font-weight:600; cursor:pointer; transition:color var(--tr); }
+.ddel:hover { color:var(--danger); }
 
-.progress-ring-wrap { display:flex; justify-content:center; margin-bottom:18px; }
-.ring-bg { fill:none; stroke:var(--line); }
-.ring-fill { fill:none; stroke:var(--accent); stroke-linecap:round; transition:stroke-dashoffset .6s ease; }
-.ring-text { font-size:14px; font-weight:800; fill:var(--ink); text-anchor:middle; dominant-baseline:central; }
-.ring-label { font-size:8px; fill:var(--ink3); text-anchor:middle; }
+/* Fixed bottom read button */
+.dfoot { position:absolute; bottom:0; left:0; right:0; padding:10px 16px max(10px, env(safe-area-inset-bottom)); background:rgba(255,255,255,.97); backdrop-filter:blur(12px); border-top:1px solid var(--line); z-index:10; }
+@media(prefers-color-scheme:dark){ .dfoot { background:rgba(28,28,28,.97); } }
+.dread { width:100%; height:50px; background:var(--accent); color:#fff; border:none; border-radius:14px; font-size:16px; font-weight:800; cursor:pointer; transition:opacity var(--tr),transform var(--tr); box-shadow:0 4px 16px rgba(108,92,231,.35); }
+.dread:hover { opacity:.9; transform:translateY(-1px); }
+
+/* Genre bg colors for hero */
+.dhero-romance   .dhero-bg-color { background:linear-gradient(160deg,#C44569,#FF6B9D); }
+.dhero-fantasy   .dhero-bg-color { background:linear-gradient(160deg,#2D3436,#6C5CE7); }
+.dhero-thriller  .dhero-bg-color { background:linear-gradient(160deg,#2D3436,#636E72); }
+.dhero-sf        .dhero-bg-color { background:linear-gradient(160deg,#0652DD,#00CEC9); }
+.dhero-historical.dhero-bg-color { background:linear-gradient(160deg,#78590A,#D4AC0D); }
+.dhero-mystery   .dhero-bg-color { background:linear-gradient(160deg,#2D3436,#6C5CE7); }
+.dhero-default   .dhero-bg-color { background:linear-gradient(160deg,#2D3436,#636E72); }
 
 /* ── CONFIRM ── */
 .confirm-ov { position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:400; display:flex; align-items:center; justify-content:center; padding:20px; opacity:0; pointer-events:none; transition:opacity .2s; }
@@ -504,38 +538,62 @@ body { font-family:-apple-system,'Apple SD Gothic Neo',BlinkMacSystemFont,'Noto 
 
 <!-- ── DETAIL ── -->
 <div class="detail" id="detail">
-  <!-- 상단 고정 바 -->
+
+  <!-- 뒤로가기 버튼 (히어로 위에 absolute) -->
   <div class="dbar">
     <button class="dbar-back" onclick="closeDetail()">←</button>
-    <div class="dbar-title" id="dBarTitle"></div>
-    <div class="dbar-space"></div>
   </div>
 
-  <!-- 표지 -->
-  <div class="dcover-wrap" id="dHero">
-    <div class="dcover-placeholder" id="dCoverPlaceholder">📖</div>
-    <div class="dcover-grad">
-      <div class="dh-title" id="dTitle"></div>
-      <div class="dh-author" id="dAuthor"></div>
+  <div class="detail-scroll">
+    <!-- 히어로 섹션: 배경색 + 표지(좌) + 정보(우) -->
+    <div class="dhero-section" id="dHeroSection">
+      <div class="dhero-bg" id="dHeroBg">
+        <div class="dhero-bg-color" id="dHeroBgColor"></div>
+        <div class="dhero-bg-blur" id="dHeroBgBlur"></div>
+        <div class="dhero-bg-grad"></div>
+      </div>
+
+      <!-- 표지 썸네일 -->
+      <div class="dcover-img-wrap" id="dCoverImgWrap">
+        <div class="dcover-img-placeholder" id="dCoverPlaceholder">📖</div>
+      </div>
+
+      <!-- 제목/작가/정보 -->
+      <div class="dhero-info">
+        <div class="dh-title"  id="dTitle"></div>
+        <div class="dh-author" id="dAuthor"></div>
+        <div class="dh-meta"   id="dMeta"></div>
+        <div class="dh-progress" id="dProgressWrap">
+          <div class="dh-prog-bar"><div class="dh-prog-fill" id="dProgFill"></div></div>
+          <div class="dh-prog-text" id="dProgText"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 흰 카드 바디 -->
+    <div class="dbody">
+      <!-- 통계 -->
+      <div class="dstats" id="dStats"></div>
+
+      <!-- 줄거리 -->
+      <div class="dsec">줄거리</div>
+      <div class="dsyn" id="dSyn"></div>
+
+      <!-- 태그 -->
+      <div class="dsec">태그</div>
+      <div class="dtags" id="dTags"></div>
+
+      <!-- 다운로드 -->
+      <button class="ddl" id="dDlBtn" onclick="downloadTxt()">↓ TXT 다운로드</button>
+
+      <!-- 삭제 -->
+      <button class="ddel" onclick="deleteNovel()">🗑 소설 삭제</button>
     </div>
   </div>
 
-  <div class="dbody">
-    <div class="progress-ring-wrap">
-      <svg width="90" height="90" viewBox="0 0 100 100">
-        <circle class="ring-bg" cx="50" cy="50" r="42" stroke-width="7"/>
-        <circle class="ring-fill" id="ringFill" cx="50" cy="50" r="42" stroke-width="7"
-          stroke-dasharray="263.9" stroke-dashoffset="263.9" transform="rotate(-90 50 50)"/>
-        <text class="ring-text" id="ringPct" x="50" y="46">0%</text>
-        <text class="ring-label" x="50" y="60">진행률</text>
-      </svg>
-    </div>
-    <div class="dstats" id="dStats"></div>
-    <div class="dsec">줄거리</div><div class="dsyn" id="dSyn"></div>
-    <div class="dsec">태그</div><div class="dtags" id="dTags"></div>
+  <!-- 하단 고정 읽기 버튼 -->
+  <div class="dfoot">
     <button class="dread" id="dReadBtn" onclick="readFromDetail()">읽기</button>
-    <button class="ddl" id="dDlBtn" onclick="downloadTxt()" style="display:none">↓ TXT 다운로드</button>
-    <button class="ddel" onclick="deleteNovel()">🗑 소설 삭제</button>
   </div>
 </div>
 
@@ -929,55 +987,86 @@ window.setSort = function(key,el) {
 document.addEventListener('click', () => document.getElementById('sortMenu').classList.remove('open'));
 
 // ── DETAIL ──
+const GENRE_BG_CLASS = { romance:'dhero-romance', fantasy:'dhero-fantasy', thriller:'dhero-thriller', sf:'dhero-sf', historical:'dhero-historical', mystery:'dhero-mystery' };
+
 window.openDetail = function(id) {
   const n = novels.find(x=>x.id===id); if(!n) return;
   curId = id;
 
-  // Top bar title
-  document.getElementById('dBarTitle').textContent = n.title;
+  // Hero section genre class
+  const heroSec = document.getElementById('dHeroSection');
+  heroSec.className = 'dhero-section ' + (GENRE_BG_CLASS[n.genre] || 'dhero-default');
 
-  // Cover
-  const hero = document.getElementById('dHero');
+  // Blurred background image (if cover exists)
+  const bgBlur = document.getElementById('dHeroBgBlur');
+  if (n.coverUrl) { bgBlur.style.backgroundImage = `url(${n.coverUrl})`; bgBlur.style.opacity = '.35'; }
+  else            { bgBlur.style.backgroundImage = 'none'; bgBlur.style.opacity = '0'; }
+
+  // Cover thumbnail
+  const wrap = document.getElementById('dCoverImgWrap');
   const placeholder = document.getElementById('dCoverPlaceholder');
-  // Remove old cover img if any
-  hero.querySelectorAll('img.dcover').forEach(el => el.remove());
-
-  const cc = genreCoverClass(n.genre);
-  hero.className = 'dcover-wrap ' + cc;
-
+  wrap.querySelectorAll('img').forEach(e=>e.remove());
   if (n.coverUrl) {
-    const img = document.createElement('img');
-    img.src = n.coverUrl; img.className = 'dcover'; img.alt = n.title;
-    hero.insertBefore(img, placeholder);
+    const img = document.createElement('img'); img.src=n.coverUrl; img.alt=n.title;
+    wrap.insertBefore(img, placeholder);
     placeholder.style.display = 'none';
   } else {
     placeholder.style.display = 'flex';
     placeholder.textContent = GENRE_ICON[n.genre] || '📖';
+    // Set placeholder bg to genre color
+    const cc = genreCoverClass(n.genre);
+    placeholder.className = 'dcover-img-placeholder ' + cc;
   }
 
+  // Title / author
   document.getElementById('dTitle').textContent  = n.title;
   document.getElementById('dAuthor').textContent = n.author || '작자 미상';
 
-  // Progress ring
+  // Meta info
+  const pages = Math.round((n.totalChars||0)/500);
+  document.getElementById('dMeta').innerHTML =
+    `<span>${LABELS[n.genre]||'기타'}</span>` +
+    (pages ? `<span class="dh-meta-dot">·</span><span>${pages}p</span>` : '') +
+    (n.lastReadAt ? `<span class="dh-meta-dot">·</span><span>${ago(n.lastReadAt)} 읽음</span>` : '');
+
+  // Progress bar
   const pct = n.progress || 0;
-  document.getElementById('ringFill').style.strokeDashoffset = CIRCUMFERENCE * (1 - pct / 100);
-  document.getElementById('ringPct').textContent = pct + '%';
+  document.getElementById('dProgFill').style.width = pct + '%';
+  document.getElementById('dProgText').textContent = pct > 0 ? `${pct}% 진행` : '아직 읽지 않았어요';
+  document.getElementById('dProgressWrap').style.display = 'block';
 
   // Stats
-  const pages = Math.round((n.totalChars || 0) / 500);
   document.getElementById('dStats').innerHTML = `
+    <div class="dstat"><span class="dstat-v a">${pct}%</span><span class="dstat-k">진행률</span></div>
     <div class="dstat"><span class="dstat-v">${pages||'-'}p</span><span class="dstat-k">분량</span></div>
-    <div class="dstat"><span class="dstat-v">${LABELS[n.genre]||'기타'}</span><span class="dstat-k">장르</span></div>
     <div class="dstat"><span class="dstat-v">${n.lastReadAt?ago(n.lastReadAt):'-'}</span><span class="dstat-k">마지막 읽기</span></div>`;
 
-  document.getElementById('dSyn').textContent  = n.synopsis || '줄거리 없음';
-  document.getElementById('dTags').innerHTML   = (n.tags||[]).map(t=>`<span class="dtag">${escapeHtml(t)}</span>`).join('') || '<span style="color:var(--ink3);font-size:12px">태그 없음</span>';
-  document.getElementById('dReadBtn').textContent = n.progress>0&&n.progress<100 ? '이어 읽기' : n.progress>=100 ? '다시 읽기' : '처음부터 읽기';
+  // Synopsis (truncate to 100 chars with "더 보기")
+  const synFull = n.synopsis || '줄거리 없음';
+  const synEl = document.getElementById('dSyn');
+  if (synFull.length > 100) {
+    synEl.innerHTML = escapeHtml(synFull.slice(0,100)) + `...<span class="dsyn-more" onclick="expandSyn(this,'${encodeURIComponent(synFull)}')">더 보기</span>`;
+  } else {
+    synEl.textContent = synFull;
+  }
+
+  // Tags
+  document.getElementById('dTags').innerHTML = (n.tags||[]).map(t=>`<span class="dtag">${escapeHtml(t)}</span>`).join('') || '<span style="color:var(--ink3);font-size:12px">태그 없음</span>';
+
+  // Read button text
+  document.getElementById('dReadBtn').textContent = pct>0&&pct<100 ? '이어 읽기' : pct>=100 ? '다시 읽기' : '처음부터 읽기';
+
+  // Download
   document.getElementById('dDlBtn').style.display = n.filePath ? 'block' : 'none';
 
-  // Scroll to top before opening
-  document.getElementById('detail').scrollTop = 0;
+  // Scroll to top
+  document.getElementById('detail').querySelector('.detail-scroll').scrollTop = 0;
   document.getElementById('detail').classList.add('on');
+};
+
+window.expandSyn = function(el, encoded) {
+  const full = decodeURIComponent(encoded);
+  el.parentElement.textContent = full;
 };
 window.closeDetail = function() { document.getElementById('detail').classList.remove('on'); };
 window.readFromDetail = function() { closeDetail(); openViewer(curId); };

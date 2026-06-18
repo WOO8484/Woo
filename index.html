@@ -754,7 +754,7 @@ body {
   </div>
 
   <div class="toolbar">
-    <input class="search-box" type="search" id="searchInput" placeholder="제목, 작가, 태그 검색..." oninput="onSearch()">
+    <input class="search-box" type="search" id="searchInput" placeholder="제목, 작가, 장르, 태그 검색..." oninput="onSearch()">
     <button class="view-toggle" onclick="toggleView()" id="viewToggleBtn" title="뷰 전환">⊞</button>
     <div class="sort-wrap">
       <button class="sort-btn" id="sortBtn" onclick="toggleSort(event)"><span id="sortLabel">최근 추가</span> ▾</button>
@@ -1464,7 +1464,7 @@ window.render = function() {
     return true;
   }).filter(n =>
     (genre === 'all' || n.genre === genre) &&
-    (!q || n.title.toLowerCase().includes(q) || (n.author||'').toLowerCase().includes(q) || (n.tags||[]).some(t=>t.toLowerCase().includes(q)))
+    (!q || n.title.toLowerCase().includes(q) || (n.author||'').toLowerCase().includes(q) || (n.tags||[]).some(t=>t.toLowerCase().includes(q)) || (n.genre||'').toLowerCase().includes(q) || ({'romance':'로맨스','fantasy':'판타지','thriller':'스릴러','sf':'sf','historical':'역사','mystery':'미스터리'}[n.genre]||'').toLowerCase().includes(q) || (n.synopsis||'').toLowerCase().includes(q))
   );
   list.sort((a,b) => {
     if (sortKey==='recent')      return new Date(b.addedAt)-new Date(a.addedAt);

@@ -1245,8 +1245,8 @@ async function loadNovels() {
     // 관리자만 소설 추가 버튼 표시
     const addBtn = document.getElementById('navAddBtn');
     if(addBtn) addBtn.style.display = isAdmin ? '' : 'none';
-    const banner = document.querySelector('.home-banner');
-    if(banner) banner.style.display = isAdmin ? '' : 'none';
+    const banner = document.getElementById('homeBanner');
+    if(banner) banner.style.display = isAdmin ? 'flex' : 'none';
 
     render(); renderHome(); renderProfile();
   } catch(e) {
@@ -1323,6 +1323,7 @@ function renderHome() {
 
   // 빈 상태
   document.getElementById('homeEmpty').style.display         = total === 0 ? 'block' : 'none';
+  const hb = document.getElementById('homeBanner'); if(hb) hb.style.display = isAdmin ? 'flex' : 'none';
   document.getElementById('homeStatsRow').style.display      = total === 0 ? 'none' : '';
   document.getElementById('homeStreakCard').style.display     = total === 0 ? 'none' : '';
   document.getElementById('homeContinueSec').style.display   = total === 0 ? 'none' : '';
@@ -1690,8 +1691,19 @@ window.openViewer = async function(id) {
     if (n.inlineText) {
       txt = n.inlineText;
     } else if (n.filePath) {
-      const storageRef = ref(storage, n.filePath);
-      const blob = await getBlob(storageRef);
+      showToast('Storage 연결 중...');
+
+      // 15초 타임아웃
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('타임아웃 - Storage 응답 없음 (15초)')), 15000)
+      );
+
+      const blob = await Promise.race([
+        getBlob(ref(storage, n.filePath)),
+        timeoutPromise
+      ]);
+
+      showToast('파일 읽는 중...');
 
       if (n.filePath.endsWith('.gz')) {
         const stream = new Response(

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- NovelS v1.0.5 -->
+<!-- NovelS v1.0.6 -->
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -647,7 +647,7 @@ body {
 <script>
 // 버전 체크 - 캐시 무효화
 (function() {
-  const CURRENT = 'v1.0.5';
+  const CURRENT = 'v1.0.6';
   const stored = localStorage.getItem('ns_version');
   if (stored && stored !== CURRENT) {
     localStorage.setItem('ns_version', CURRENT);
@@ -697,7 +697,7 @@ body {
 
 <nav class="nav" style="display:none">
   <div class="nav-logo" id="navLogo">Novel<em>S</em></div>
-  <div style="position:absolute;left:50%;transform:translateX(-50%);font-size:11px;color:var(--ink3);background:var(--bg2);padding:2px 8px;border-radius:6px;font-weight:500">v1.0.5</div>
+  <div style="position:absolute;left:50%;transform:translateX(-50%);font-size:11px;color:var(--ink3);background:var(--bg2);padding:2px 8px;border-radius:6px;font-weight:500">v1.0.6</div>
   <div class="nav-user">
     <button class="nav-add" id="navAddBtn" onclick="openAdd()">＋ 소설 추가</button>
     <div class="nav-avatar" id="navAvatar" onclick="toggleUserMenu(event)"></div>
@@ -1730,11 +1730,11 @@ function splitCh(txt) {
 
   const isChLine = l => {
     const t = l.trim();
-    if (t.length > 80) return false;
+    if (t.length < 2 || t.length > 100) return false;
     return (
       /^(제\s*\d+[장편화]|Chapter\s*\d+|챕터\s*\d+|프롤로그|에필로그|후기|작가의\s*말)/i.test(t) ||
-      /^[\s\-=━•]{5,}$/.test(t) ||
-      /^\d+\.\s/.test(t)
+      /^[\s\-=━•]{6,}$/.test(t) ||
+      /^\d+\.\s+/.test(t)
     );
   };
 
@@ -1897,10 +1897,10 @@ window.onVScroll = function() {
   const progress = Math.round(((curCh + (vBody.scrollTop / (vBody.scrollHeight - vBody.clientHeight || 1))) / n._chs.length) * 100);
   document.getElementById('vpFill').style.width = Math.min(100, progress) + '%';
 
-  clearTimeout(scrollSaveTimer);
-  scrollSaveTimer = setTimeout(() => {
+  clearTimeout(window.scrollSaveTimer);
+  window.scrollSaveTimer = setTimeout(() => {
     localStorage.setItem(`ns_scroll_${curId}_${curCh}`, Math.round(vBody.scrollTop));
-  }, 400);
+  }, 300);
 };
 
 window.nextCh = function() {

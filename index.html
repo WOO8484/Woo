@@ -679,7 +679,7 @@ body {
 
 <nav class="nav" style="display:none">
   <div class="nav-logo" id="navLogo">Novel<em>S</em></div>
-  <div style="position:absolute;left:50%;transform:translateX(-50%);font-size:11px;color:var(--ink3);background:var(--bg2);padding:2px 8px;border-radius:6px;font-weight:500">v1.0.4</div>
+  <div style="position:absolute;left:50%;transform:translateX(-50%);font-size:11px;color:var(--ink3);background:var(--bg2);padding:2px 8px;border-radius:6px;font-weight:500">v1.0.6</div>
   <div class="nav-user">
     <button class="nav-add" id="navAddBtn" onclick="openAdd()">＋ 소설 추가</button>
     <div class="nav-avatar" id="navAvatar" onclick="toggleUserMenu(event)"></div>
@@ -1004,7 +1004,7 @@ body {
 
       <!-- 다운로드 / 삭제 -->
       <button class="ddl" id="dDlBtn" onclick="downloadTxt()">↓ TXT 다운로드</button>
-      <button class="ddel" onclick="deleteNovel()">🗑 소설 삭제</button>
+      <button class="ddel" id="dDelBtn" onclick="deleteNovel()">🗑 소설 삭제</button>
     </div>
   </div>
 
@@ -1183,7 +1183,7 @@ body {
   <button class="msave" id="saveBtn" onclick="saveNovel()">서재에 추가</button>
 </div>
 
-<!-- ── CONFIRM ── -->
+<!-- ── CONFIRM (일반) ── -->
 <div class="confirm-ov" id="confirmOv">
   <div class="confirm-box">
     <div class="confirm-icon">🗑️</div>
@@ -1192,6 +1192,20 @@ body {
     <div class="confirm-btns">
       <button class="confirm-cancel" onclick="closeConfirm()">취소</button>
       <button class="confirm-ok" id="confirmOkBtn">삭제</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── ADMIN DELETE CHOICE ── -->
+<div class="confirm-ov" id="adminDelOv">
+  <div class="confirm-box">
+    <div class="confirm-icon">🗑️</div>
+    <div class="confirm-title">삭제 방식 선택</div>
+    <div class="confirm-msg" id="adminDelMsg"></div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px">
+      <button class="confirm-ok" id="adminDelFileBtn" style="background:var(--danger)">파일까지 완전 삭제</button>
+      <button class="confirm-ok" id="adminDelListBtn" style="background:var(--ink2)">목록만 삭제 (파일 유지)</button>
+      <button class="confirm-cancel" onclick="closeAdminDelDialog()">취소</button>
     </div>
   </div>
 </div>
@@ -1646,8 +1660,10 @@ window.openDetail = function(id) {
   // Read button text
   document.getElementById('dReadBtn').textContent = pct>0&&pct<100 ? '이어 읽기' : pct>=100 ? '다시 읽기' : '처음부터 읽기';
 
-  // Download
+  // Download & Delete visibility
   document.getElementById('dDlBtn').style.display = (n.filePath || n.inlineText) ? 'block' : 'none';
+  const canDelete = n._mine || (n._shared && isAdmin);
+  document.getElementById('dDelBtn').style.display = canDelete ? 'block' : 'none';
 
   // Scroll to top
   document.getElementById('detail').querySelector('.detail-scroll').scrollTop = 0;
@@ -1663,30 +1679,51 @@ window.readFromDetail = function() { closeDetail(); openViewer(curId); };
 window.deleteNovel = async function() {
   const n = novels.find(x=>x.id===curId);
   if(!n) return;
+  if (n._shared && !isAdmin) { showToast('삭제 권한이 없어요', 'error'); return; }
 
-  document.getElementById('confirmMsg').textContent = `"${n.title}"을(를) 삭제하면 되돌릴 수 없어요.`;
-  document.getElementById('confirmOv').classList.add('on');
+  if (isAdmin && n._shared) {
+    // 관리자: 파일까지 삭제 vs 목록만 삭제 선택
+    document.getElementById('adminDelMsg').textContent = `"${n.title}"`;
+    document.getElementById('adminDelOv').classList.add('on');
 
-  document.getElementById('confirmOkBtn').onclick = async () => {
-    closeConfirm();
-    try {
-      if (n.filePath) await deleteObject(ref(storage, n.filePath));
-
-      if (n._shared) {
+    document.getElementById('adminDelFileBtn').onclick = async () => {
+      closeAdminDelDialog();
+      try {
+        if (n.filePath) await deleteObject(ref(storage, n.filePath));
         await deleteDoc(doc(db, 'sharedNovels', curId.replace('shared_', '')));
-      } else {
-        await deleteDoc(doc(db, 'users', currentUser.uid, 'novels', curId));
-      }
+        novels = novels.filter(x => x.id !== curId);
+        closeDetail(); render(); renderHome(); renderProfile();
+        showToast('파일까지 완전 삭제했어요');
+      } catch(e) { showToast('삭제 실패: ' + e.message, 'error'); }
+    };
 
-      novels = novels.filter(x => x.id !== curId);
-      closeDetail();
-      render(); renderHome(); renderProfile();
-      showToast('삭제했습니다');
-    } catch(e) {
-      showToast('삭제 실패: ' + e.message, 'error');
-    }
-  };
+    document.getElementById('adminDelListBtn').onclick = async () => {
+      closeAdminDelDialog();
+      try {
+        await deleteDoc(doc(db, 'sharedNovels', curId.replace('shared_', '')));
+        novels = novels.filter(x => x.id !== curId);
+        closeDetail(); render(); renderHome(); renderProfile();
+        showToast('목록에서 삭제했어요 (파일 유지)');
+      } catch(e) { showToast('삭제 실패: ' + e.message, 'error'); }
+    };
+
+  } else {
+    // 일반 유저: 본인 서재 목록에서만 제거 (Storage 파일 건드리지 않음)
+    document.getElementById('confirmMsg').textContent = `"${n.title}"을(를) 내 서재에서 삭제할까요?`;
+    document.getElementById('confirmOv').classList.add('on');
+
+    document.getElementById('confirmOkBtn').onclick = async () => {
+      closeConfirm();
+      try {
+        await deleteDoc(doc(db, 'users', currentUser.uid, 'novels', curId));
+        novels = novels.filter(x => x.id !== curId);
+        closeDetail(); render(); renderHome(); renderProfile();
+        showToast('서재에서 삭제했어요');
+      } catch(e) { showToast('삭제 실패: ' + e.message, 'error'); }
+    };
+  }
 };
+window.closeAdminDelDialog = function() { document.getElementById('adminDelOv').classList.remove('on'); };
 window.closeConfirm = function() { document.getElementById('confirmOv').classList.remove('on'); };
 window.downloadTxt = async function() {
   const n = novels.find(x=>x.id===curId); if(!n?.filePath) return;

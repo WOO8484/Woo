@@ -305,7 +305,7 @@ body {
 .stats-toggle:hover { color:var(--accent); }
 
 /* ── VIEWER ── */
-#viewer { display:none; flex-direction:column; height:100vh; overflow:hidden; }
+#viewer { display:none; flex-direction:column; position:fixed; inset:0; z-index:500; background:var(--bg); overflow:hidden; }
 .vn { position:relative; z-index:50; background:rgba(255,255,255,.97); backdrop-filter:blur(12px); border-bottom:1px solid var(--line); height:50px; padding:0 14px; display:flex; align-items:center; gap:10px; transition:transform .28s cubic-bezier(.32,.72,0,1),opacity .28s; }
 .vn.hidden { transform:translateY(-100%); opacity:0; pointer-events:none; }
 .vback { width:30px; height:30px; border-radius:8px; border:1px solid var(--line); background:var(--bg); cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center; color:var(--ink); }
@@ -1684,26 +1684,15 @@ window.openViewer = async function(id) {
     document.getElementById('vTitle').textContent = n.title;
     document.querySelector('.nav').style.display = 'none';
     document.getElementById('tabBar').style.display = 'none';
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    const vv = document.getElementById('viewer');
-    vv.style.display='flex'; vv.style.flexDirection='column';
+    document.getElementById('viewer').style.display = 'flex';
     document.getElementById('vText').innerHTML='<div style="text-align:center;padding:48px;color:var(--ink3);font-size:13px">📖 불러오는 중...</div>';
 
     let txt = '';
     if (n.inlineText) {
       txt = n.inlineText;
     } else if (n.filePath) {
-      let blob;
-      try {
-        // getBlob 우선 시도
-        blob = await getBlob(ref(storage, n.filePath));
-      } catch {
-        // 실패 시 getDownloadURL + fetch 폴백
-        const url = await getDownloadURL(ref(storage, n.filePath));
-        const res = await fetch(url);
-        if (!res.ok) throw new Error('다운로드 실패 HTTP ' + res.status);
-        blob = await res.blob();
-      }
+      const storageRef = ref(storage, n.filePath);
+      const blob = await getBlob(storageRef);
 
       if (n.filePath.endsWith('.gz')) {
         const stream = new Response(
@@ -1735,8 +1724,10 @@ window.openViewer = async function(id) {
     n.lastReadAt = new Date().toISOString();
     renderCh();
   } catch(e) {
-    showToast('파일 불러오기 실패: '+e.message,'error');
-    closeViewer();
+    showToast('불러오기 실패: ' + (e.code || e.message), 'error');
+    document.getElementById('viewer').style.display = 'none';
+    document.querySelector('.nav').style.display = 'flex';
+    document.getElementById('tabBar').style.display = 'flex';
   }
 };
 
@@ -1858,8 +1849,6 @@ window.closeViewer = function() {
   document.getElementById('viewer').style.display = 'none';
   document.querySelector('.nav').style.display = 'flex';
   document.getElementById('tabBar').style.display = 'flex';
-  // 현재 탭 복원
-  document.getElementById('page-' + currentTab).classList.add('active');
   clearTimeout(uiHideTimer);
   stopAutoScroll();
   autoScroll = false;

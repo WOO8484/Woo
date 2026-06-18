@@ -680,7 +680,7 @@ body {
 
 <nav class="nav" style="display:none">
   <div class="nav-logo" id="navLogo">Novel<em>S</em></div>
-  <div style="position:absolute;left:50%;transform:translateX(-50%);font-size:11px;color:var(--ink3);background:var(--bg2);padding:2px 8px;border-radius:6px;font-weight:500">v1.1.0</div>
+  <div style="position:absolute;left:50%;transform:translateX(-50%);font-size:11px;color:var(--ink3);background:var(--bg2);padding:2px 8px;border-radius:6px;font-weight:500">v1.1.1</div>
   <div class="nav-user">
     <button class="nav-add" id="navAddBtn" onclick="openAdd()">＋ 소설 추가</button>
     <div class="nav-avatar" id="navAvatar" onclick="toggleUserMenu(event)"></div>
@@ -1804,34 +1804,7 @@ function splitCh(txt) {
     chs.push({ title: title || '본문', content: body.join('\n').trim() });
   }
 
-  // 챕터 분할 실패 시 (1챕터로만 잡힌 경우) → 문단 경계 기준 자동 분할
-  if (chs.length <= 1 && txt.length > 20000) {
-    const CHARS_PER_CH = 20000; // 약 40p 분량
-    const autoChaps = [];
-    // 빈 줄 기준으로 문단 묶음
-    const paragraphs = txt.split(/\n{2,}/);
-    let chunk = [];
-    let charCount = 0;
-    let chNum = 1;
-
-    for (const para of paragraphs) {
-      chunk.push(para);
-      charCount += para.length;
-      // CHARS_PER_CH 넘으면 다음 문단 시작 전에 분할
-      if (charCount >= CHARS_PER_CH) {
-        autoChaps.push({ title: `${chNum}화`, content: chunk.join('\n\n').trim() });
-        chunk = [];
-        charCount = 0;
-        chNum++;
-      }
-    }
-    if (chunk.join('').trim()) {
-      autoChaps.push({ title: `${chNum}화`, content: chunk.join('\n\n').trim() });
-    }
-    // 자동 분할로도 1개면 그냥 단일 본문으로
-    return autoChaps.length > 1 ? autoChaps : [{ title: '본문', content: txt }];
-  }
-
+  // 챕터 구분자 없으면 단일 본문으로 유지 (스크롤로 읽기)
   return chs.length ? chs : [{ title: '본문', content: txt }];
 }
 

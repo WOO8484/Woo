@@ -1171,7 +1171,7 @@ body {
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy, where, getDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, uploadBytesResumable, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-storage.js";
+import { getStorage, ref, uploadBytes, uploadBytesResumable, getDownloadURL, getBlob, deleteObject } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-storage.js";
 import {
   getAuth, onAuthStateChanged,
   signOut,
@@ -1643,7 +1643,15 @@ window.deleteNovel = function() {
 window.closeConfirm = function() { document.getElementById('confirmOv').classList.remove('on'); };
 window.downloadTxt = async function() {
   const n = novels.find(x=>x.id===curId); if(!n?.filePath) return;
-  try { const url=await getDownloadURL(ref(storage,n.filePath)); const a=document.createElement('a'); a.href=url; a.download=n.title+'.txt'; a.click(); }
+  try {
+    const blob = await getBlob(ref(storage, n.filePath));
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = n.title + '.txt';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
   catch(e) { showToast('다운로드 실패','error'); }
 };
 
@@ -1681,22 +1689,19 @@ window.openViewer = async function(id) {
 
     let txt = '';
     if (n.inlineText) {
-      // 구버전 호환
       txt = n.inlineText;
     } else if (n.filePath) {
-      const url = await getDownloadURL(ref(storage, n.filePath));
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(`파일 다운로드 실패 (HTTP ${res.status})`);
+      // getBlob으로 직접 다운로드 (CORS 문제 없음)
+      const blob = await getBlob(ref(storage, n.filePath));
 
-      // gzip 압축 파일 처리
       if (n.filePath.endsWith('.gz')) {
-        const buf = await res.arrayBuffer();
+        // gzip 압축 해제
         const stream = new Response(
-          new Blob([buf]).stream().pipeThrough(new DecompressionStream('gzip'))
+          blob.stream().pipeThrough(new DecompressionStream('gzip'))
         );
         txt = await stream.text();
       } else {
-        txt = await res.text();
+        txt = await blob.text();
       }
     } else {
       throw new Error('저장된 파일이 없어요. 소설을 다시 추가해주세요.');

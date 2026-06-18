@@ -238,77 +238,105 @@ body {
 /* Scrollable content area */
 .detail-scroll { flex:1; overflow-y:auto; padding-bottom:90px; }
 
-/* Top bar — transparent over hero bg */
-.dbar { position:absolute; top:0; left:0; right:0; z-index:10; display:flex; align-items:center; justify-content:space-between; padding:0 14px; height:50px; }
-.dbar-back { width:34px; height:34px; border-radius:50%; background:rgba(0,0,0,.25); border:none; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; color:#fff; backdrop-filter:blur(4px); }
+/* Top bar — transparent, floats over hero */
+.dbar { position:absolute; top:0; left:0; right:0; z-index:10; display:flex; align-items:center; justify-content:space-between; padding:0 16px; height:54px; }
+.dbar-back { width:36px; height:36px; border-radius:50%; background:rgba(0,0,0,.18); border:none; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; color:#fff; }
 
-/* Hero section — pure background, no padding bottom */
-.dhero-section { position:relative; height:200px; }
-.dhero-bg { position:absolute; inset:0; }
-.dhero-bg-blur { position:absolute; inset:0; opacity:.4; background-size:cover; background-position:center top; filter:blur(24px) brightness(.75); }
-.dhero-bg-color { position:absolute; inset:0; }
-.dhero-bg-grad { position:absolute; inset:0; background:linear-gradient(to bottom, rgba(0,0,0,.1) 0%, rgba(0,0,0,.0) 100%); }
+/* Hero — cover left, title right, on top of bg */
+.dhero-section {
+  position:relative;
+  padding:60px 16px 28px;
+  display:flex; align-items:flex-end; gap:16px;
+  min-height:260px;
+}
+.dhero-bg { position:absolute; inset:0; overflow:hidden; }
+.dhero-bg-blur {
+  position:absolute; inset:-20px;
+  background-size:cover; background-position:center;
+  filter:blur(22px) brightness(.65) saturate(1.2);
+  opacity:1;
+}
+.dhero-bg-color { position:absolute; inset:0; opacity:.55; }
+.dhero-bg-grad { position:absolute; inset:0; background:linear-gradient(to bottom,transparent 30%,rgba(0,0,0,.35) 100%); }
 
-/* Card body — flush against hero, no gap */
-.dbody { background:#fff; border-radius:24px 24px 0 0; position:relative; z-index:2; margin-top:0; padding:0 16px 100px; }
-
-/* Cover + title row — cover overlaps hero upward */
-.dbook-row { display:flex; gap:14px; align-items:flex-end; padding:0 0 20px; margin-top:-60px; position:relative; z-index:3; }
-
-/* Cover thumbnail — larger, pokes above card */
-.dcover-img-wrap { flex-shrink:0; width:120px; height:162px; border-radius:12px; overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,.3); position:relative; }
+/* Cover — stays inside hero height, no overlap */
+.dcover-img-wrap {
+  flex-shrink:0; width:130px; height:174px;
+  border-radius:10px; overflow:hidden;
+  box-shadow:0 8px 28px rgba(0,0,0,.45);
+  position:relative; z-index:1;
+}
 .dcover-img-wrap img { width:100%; height:100%; object-fit:cover; display:block; }
-.dcover-img-placeholder { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:40px; }
+.dcover-img-placeholder {
+  width:100%; height:100%;
+  display:flex; align-items:center; justify-content:center; font-size:40px;
+}
 
-/* Title/info beside cover — sits on top of white card */
-.dhero-info { flex:1; padding-bottom:4px; padding-top:70px; }
-.dh-title  { font-size:17px; font-weight:800; color:var(--ink); line-height:1.35; margin-bottom:5px; }
-.dh-author { font-size:13px; color:var(--ink2); margin-bottom:6px; }
-.dh-meta   { font-size:11px; color:var(--ink3); display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:10px; }
+/* Title/info — white text on hero bg */
+.dhero-info { flex:1; position:relative; z-index:1; padding-bottom:4px; }
+.dh-title  { font-size:20px; font-weight:800; color:#fff; line-height:1.3; margin-bottom:6px; }
+.dh-author { font-size:13px; color:rgba(255,255,255,.85); margin-bottom:10px; }
+.dh-meta   { font-size:12px; color:rgba(255,255,255,.7); display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin-bottom:14px; }
 .dh-meta-dot { opacity:.5; }
 .dh-progress { }
-.dh-prog-bar { height:3px; background:var(--line); border-radius:2px; overflow:hidden; margin-bottom:3px; }
-.dh-prog-fill { height:100%; background:var(--accent); border-radius:2px; transition:width .4s; }
-.dh-prog-text { font-size:10px; color:var(--ink3); font-weight:600; }
+.dh-prog-bar { height:3px; background:rgba(255,255,255,.25); border-radius:2px; overflow:hidden; margin-bottom:4px; }
+.dh-prog-fill { height:100%; background:#fff; border-radius:2px; transition:width .4s; }
+.dh-prog-text { font-size:11px; color:rgba(255,255,255,.75); font-weight:600; }
 
-/* Stats row */
-.dstats { display:flex; gap:0; margin-bottom:20px; padding-bottom:18px; border-bottom:1px solid var(--line); }
-.dstat { flex:1; text-align:center; position:relative; }
-.dstat + .dstat::before { content:''; position:absolute; left:0; top:15%; bottom:15%; width:1px; background:var(--line); }
-.dstat-v { font-size:17px; font-weight:800; display:block; color:var(--ink); }
+/* White card — flush under hero, rounded top */
+.dbody {
+  background:#F5F5F5;
+  border-radius:0; margin-top:0;
+  padding:14px 14px 100px;
+  display:flex; flex-direction:column; gap:10px;
+}
+
+/* Inner cards */
+.dcard {
+  background:#fff;
+  border-radius:14px;
+  padding:18px 16px;
+}
+
+/* Stats card — 2 stats side by side */
+.dstats { display:flex; gap:0; }
+.dstat { flex:1; position:relative; }
+.dstat + .dstat::before { content:''; position:absolute; left:0; top:10%; bottom:10%; width:1px; background:var(--line); }
+.dstat-v { font-size:22px; font-weight:900; display:block; color:var(--ink); line-height:1; margin-bottom:4px; }
 .dstat-v.a { color:var(--accent); }
-.dstat-k { font-size:10px; color:var(--ink3); margin-top:3px; display:block; }
+.dstat-k { font-size:11px; color:var(--ink3); display:block; }
 
-/* Synopsis */
-.dsec { font-size:13px; font-weight:700; margin-bottom:8px; color:var(--ink); }
-.dsyn { font-size:13px; line-height:1.75; color:var(--ink2); margin-bottom:18px; }
-.dsyn-more { color:var(--accent); font-size:13px; font-weight:600; cursor:pointer; margin-left:4px; }
+/* Synopsis card */
+.dsyn-card { }
+.dsec { font-size:14px; font-weight:700; margin-bottom:10px; color:var(--ink); }
+.dsyn { font-size:14px; line-height:1.8; color:var(--ink2); margin:0; }
+.dsyn-more { color:var(--accent); font-size:14px; font-weight:600; cursor:pointer; margin-left:4px; }
 
-/* Tags */
-.dtags { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:24px; }
-.dtag { padding:4px 11px; border-radius:20px; font-size:12px; font-weight:600; background:var(--bg2); color:var(--ink2); border:1px solid var(--line); }
+/* Tags card */
+.dtags { display:flex; flex-wrap:wrap; gap:7px; margin:0; }
+.dtag { padding:6px 14px; border-radius:20px; font-size:13px; font-weight:500; background:#F5F5F5; color:var(--ink); border:1px solid var(--line); }
 
-/* Download link */
-.ddl { width:100%; height:40px; background:var(--bg); color:var(--accent); border:1px solid var(--accent); border-radius:var(--r); font-size:13px; font-weight:700; cursor:pointer; margin-bottom:12px; transition:background var(--tr); display:none; }
+/* Download */
+.ddl { width:100%; height:42px; background:#fff; color:var(--accent); border:1px solid var(--accent); border-radius:10px; font-size:13px; font-weight:700; cursor:pointer; transition:background var(--tr); display:none; }
 .ddl:hover { background:var(--accent2); }
 
-/* Delete button */
-.ddel { width:100%; height:38px; background:none; color:var(--ink3); border:none; font-size:12px; font-weight:600; cursor:pointer; transition:color var(--tr); }
+/* Delete */
+.ddel { width:100%; height:38px; background:none; color:var(--ink3); border:none; font-size:12px; cursor:pointer; transition:color var(--tr); }
 .ddel:hover { color:var(--danger); }
 
 /* Fixed bottom read button */
-.dfoot { position:fixed; bottom:0; left:0; right:0; padding:10px 16px max(10px, env(safe-area-inset-bottom)); background:rgba(255,255,255,.97); backdrop-filter:blur(12px); border-top:1px solid var(--line); z-index:10; }
-.dread { width:100%; height:50px; background:var(--accent); color:#fff; border:none; border-radius:14px; font-size:16px; font-weight:800; cursor:pointer; transition:opacity var(--tr),transform var(--tr); box-shadow:0 4px 16px rgba(108,92,231,.35); }
-.dread:hover { opacity:.9; transform:translateY(-1px); }
+.dfoot { position:fixed; bottom:0; left:0; right:0; padding:12px 16px max(12px,env(safe-area-inset-bottom)); background:rgba(255,255,255,.97); backdrop-filter:blur(12px); border-top:1px solid var(--line); z-index:10; }
+.dread { width:100%; height:52px; background:var(--accent); color:#fff; border:none; border-radius:26px; font-size:17px; font-weight:800; cursor:pointer; transition:opacity var(--tr); box-shadow:0 4px 16px rgba(108,92,231,.3); }
+.dread:hover { opacity:.9; }
 
-/* Genre bg colors for hero */
-.dhero-romance   .dhero-bg-color { background:linear-gradient(160deg,#C44569,#FF6B9D); }
-.dhero-fantasy   .dhero-bg-color { background:linear-gradient(160deg,#2D3436,#6C5CE7); }
-.dhero-thriller  .dhero-bg-color { background:linear-gradient(160deg,#2D3436,#636E72); }
-.dhero-sf        .dhero-bg-color { background:linear-gradient(160deg,#0652DD,#00CEC9); }
-.dhero-historical.dhero-bg-color { background:linear-gradient(160deg,#78590A,#D4AC0D); }
-.dhero-mystery   .dhero-bg-color { background:linear-gradient(160deg,#2D3436,#6C5CE7); }
-.dhero-default   .dhero-bg-color { background:linear-gradient(160deg,#2D3436,#636E72); }
+/* Genre bg tints */
+.dhero-romance    .dhero-bg-color { background:linear-gradient(160deg,#C44569,#E67E9A); }
+.dhero-fantasy    .dhero-bg-color { background:linear-gradient(160deg,#3D2B8A,#6C5CE7); }
+.dhero-thriller   .dhero-bg-color { background:linear-gradient(160deg,#1a1a2e,#4a4a6a); }
+.dhero-sf         .dhero-bg-color { background:linear-gradient(160deg,#023E8A,#0096C7); }
+.dhero-historical .dhero-bg-color { background:linear-gradient(160deg,#5C4208,#C9952A); }
+.dhero-mystery    .dhero-bg-color { background:linear-gradient(160deg,#1a1a2e,#5C4A8A); }
+.dhero-default    .dhero-bg-color { background:linear-gradient(160deg,#3a3a4a,#6a6a7a); }
 
 /* ── CONFIRM ── */
 .confirm-ov { position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:400; display:flex; align-items:center; justify-content:center; padding:20px; opacity:0; pointer-events:none; transition:opacity .2s; }
@@ -527,48 +555,50 @@ body {
   </div>
 
   <div class="detail-scroll">
-    <!-- 히어로: 배경색만 -->
+    <!-- 히어로: 표지+제목이 배경 위에 -->
     <div class="dhero-section" id="dHeroSection">
       <div class="dhero-bg" id="dHeroBg">
         <div class="dhero-bg-color" id="dHeroBgColor"></div>
-        <div class="dhero-bg-blur" id="dHeroBgBlur"></div>
+        <div class="dhero-bg-blur"  id="dHeroBgBlur"></div>
         <div class="dhero-bg-grad"></div>
+      </div>
+      <!-- 표지 (좌) -->
+      <div class="dcover-img-wrap" id="dCoverImgWrap">
+        <div class="dcover-img-placeholder" id="dCoverPlaceholder">📖</div>
+      </div>
+      <!-- 제목/작가/메타/진행률 (우) -->
+      <div class="dhero-info">
+        <div class="dh-title"  id="dTitle"></div>
+        <div class="dh-author" id="dAuthor"></div>
+        <div class="dh-meta"   id="dMeta"></div>
+        <div class="dh-progress" id="dProgressWrap">
+          <div class="dh-prog-bar"><div class="dh-prog-fill" id="dProgFill"></div></div>
+          <div class="dh-prog-text" id="dProgText"></div>
+        </div>
       </div>
     </div>
 
-    <!-- 흰 카드: 표지가 위로 튀어나옴 -->
+    <!-- 회색 배경 카드 영역 -->
     <div class="dbody">
-      <!-- 표지(좌) + 제목/정보(우) — 카드 위로 올라가는 행 -->
-      <div class="dbook-row">
-        <div class="dcover-img-wrap" id="dCoverImgWrap">
-          <div class="dcover-img-placeholder" id="dCoverPlaceholder">📖</div>
-        </div>
-        <div class="dhero-info">
-          <div class="dh-title"  id="dTitle"></div>
-          <div class="dh-author" id="dAuthor"></div>
-          <div class="dh-meta"   id="dMeta"></div>
-          <div class="dh-progress" id="dProgressWrap">
-            <div class="dh-prog-bar"><div class="dh-prog-fill" id="dProgFill"></div></div>
-            <div class="dh-prog-text" id="dProgText"></div>
-          </div>
-        </div>
+
+      <!-- 통계 카드 -->
+      <div class="dcard">
+        <div class="dstats" id="dStats"></div>
       </div>
 
-      <!-- 통계 -->
-      <div class="dstats" id="dStats"></div>
+      <!-- 줄거리 카드 -->
+      <div class="dcard dsyn-card">
+        <div class="dsyn" id="dSyn"></div>
+      </div>
 
-      <!-- 줄거리 -->
-      <div class="dsec">줄거리</div>
-      <div class="dsyn" id="dSyn"></div>
+      <!-- 태그 카드 -->
+      <div class="dcard">
+        <div class="dsec">태그</div>
+        <div class="dtags" id="dTags"></div>
+      </div>
 
-      <!-- 태그 -->
-      <div class="dsec">태그</div>
-      <div class="dtags" id="dTags"></div>
-
-      <!-- 다운로드 -->
+      <!-- 다운로드 / 삭제 -->
       <button class="ddl" id="dDlBtn" onclick="downloadTxt()">↓ TXT 다운로드</button>
-
-      <!-- 삭제 -->
       <button class="ddel" onclick="deleteNovel()">🗑 소설 삭제</button>
     </div>
   </div>
@@ -1015,11 +1045,16 @@ window.openDetail = function(id) {
   document.getElementById('dProgText').textContent = pct > 0 ? `${pct}% 진행` : '아직 읽지 않았어요';
   document.getElementById('dProgressWrap').style.display = 'block';
 
-  // Stats
+  // Stats — 2 items: 진행률 + 분량
   document.getElementById('dStats').innerHTML = `
-    <div class="dstat"><span class="dstat-v a">${pct}%</span><span class="dstat-k">진행률</span></div>
-    <div class="dstat"><span class="dstat-v">${pages > 0 ? pages+'p' : '?p'}</span><span class="dstat-k">분량</span></div>
-    <div class="dstat"><span class="dstat-v">${n.lastReadAt?ago(n.lastReadAt):'-'}</span><span class="dstat-k">마지막 읽기</span></div>`;
+    <div class="dstat">
+      <span class="dstat-v a">${pct}%</span>
+      <span class="dstat-k">진행률</span>
+    </div>
+    <div class="dstat">
+      <span class="dstat-v">${pages > 0 ? pages+'p' : '?p'}</span>
+      <span class="dstat-k">분량 (추정)</span>
+    </div>`;
 
   // Synopsis (truncate to 100 chars with "더 보기")
   const synFull = n.synopsis || '줄거리 없음';

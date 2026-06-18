@@ -1200,7 +1200,7 @@ let autoHide   = localStorage.getItem('ns_autoHide') !== 'false';
 let hideDelay  = parseInt(localStorage.getItem('ns_hideDelay')   || '4', 10);
 let scrollSpeed = parseInt(localStorage.getItem('ns_scrollSpeed')|| '3', 10);
 let viewMode   = localStorage.getItem('ns_viewMode') || 'grid'; // 'grid' | 'list'
-let statsOpen  = localStorage.getItem('ns_statsOpen') === 'true';
+// statsOpen 제거됨 (프로필 탭으로 이동)
 let selG = '', coverUrl = '', curFile = null;
 let searchDebounce = null;
 // viewer UI state

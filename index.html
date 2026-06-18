@@ -686,7 +686,7 @@ body {
 
 <nav class="nav" style="display:none">
   <div class="nav-logo" id="navLogo">Novel<em>S</em></div>
-  <div style="position:absolute;left:50%;transform:translateX(-50%);font-size:11px;color:var(--ink3);background:var(--bg2);padding:2px 8px;border-radius:6px;font-weight:500">v1.2.3</div>
+  <div style="position:absolute;left:50%;transform:translateX(-50%);font-size:11px;color:var(--ink3);background:var(--bg2);padding:2px 8px;border-radius:6px;font-weight:500">v1.2.4</div>
   <div class="nav-user">
     <button class="nav-add" id="navAddBtn" onclick="openAdd()">＋ 소설 추가</button>
     <div class="nav-avatar" id="navAvatar" onclick="toggleUserMenu(event)"></div>
@@ -1213,6 +1213,19 @@ body {
 
 <div class="toast" id="toast"></div>
 
+<!-- ── 완독 팝업 ── -->
+<div class="confirm-ov" id="completeOv">
+  <div class="confirm-box" style="text-align:center">
+    <div class="confirm-icon">🎉</div>
+    <div class="confirm-title">완독을 축하드려요!</div>
+    <div class="confirm-msg" id="completeMsg"></div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px">
+      <button class="confirm-ok" style="background:var(--accent)" onclick="closeCompletePopup(true)">서재로 나가기</button>
+      <button class="confirm-cancel" onclick="closeCompletePopup(false)">처음부터 다시 읽기</button>
+    </div>
+  </div>
+</div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, where, getDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
@@ -1542,8 +1555,9 @@ window.render = function() {
   grid.innerHTML = list.map(n => {
     const cc = genreCoverClass(n.genre);
     const icon = GENRE_ICON[n.genre] || '📖';
+    const fallback = `this.onerror=null;this.parentElement.innerHTML='<div class=\\"cover-pat\\"></div><div class=\\"cover-stripe\\"></div><div class=\\"cover-icon\\">${icon}</div>'`;
     const coverInner = n.coverUrl
-      ? `<img src="${escapeHtml(n.coverUrl)}" alt="${escapeHtml(n.title)} 표지" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">`
+      ? `<img src="${escapeHtml(n.coverUrl)}" alt="${escapeHtml(n.title)} 표지" loading="lazy" onerror="${fallback}" style="width:100%;height:100%;object-fit:cover;display:block">`
       : `<div class="cover-pat"></div><div class="cover-stripe"></div><div class="cover-icon">${icon}</div>`;
     const favStar = n.favorite ? '❤️' : '🤍';
     return `<div class="card" onclick="openDetail('${n.id}')">
@@ -1810,24 +1824,20 @@ window.openViewer = async function(id) {
       txt = n.inlineText;
     } else if (n.filePath) {
       showToast('파일 불러오는 중...');
-
-      // getBytes: SDK가 직접 가져옴 (CORS 없음)
       const bytes = await getBytes(ref(storage, n.filePath));
 
-      if (n.filePath.endsWith('.gz')) {
-        // gzip 압축 해제 (DecompressionStream 미지원 브라우저 폴백)
+      // isCompressed 플래그 우선, 폴백으로 확장자 확인
+      const needDecompress = n.isCompressed || n.filePath.endsWith('.gz');
+      if (needDecompress) {
         if (typeof DecompressionStream !== 'undefined') {
           try {
             const ds = new DecompressionStream('gzip');
             txt = await new Response(new Blob([bytes]).stream().pipeThrough(ds)).text();
           } catch(e2) {
-            // 압축 해제 실패 시 원본 바이트를 UTF-8로 디코딩 시도
-            txt = new TextDecoder('utf-8').decode(bytes);
+            throw new Error('압축 해제 실패. 파일이 손상되었을 수 있어요.');
           }
         } else {
-          // DecompressionStream 미지원 → UTF-8 디코딩 시도 (업로드 시 미압축 저장된 경우 대비)
-          txt = new TextDecoder('utf-8').decode(bytes);
-          if (!txt.trim()) throw new Error('이 브라우저는 압축 파일을 지원하지 않아요. 다른 브라우저를 사용해주세요.');
+          throw new Error('이 브라우저는 압축 파일을 지원하지 않아요. Safari 최신 버전이나 Chrome을 사용해주세요.');
         }
       } else {
         txt = new TextDecoder('utf-8').decode(bytes);
@@ -1839,9 +1849,16 @@ window.openViewer = async function(id) {
     if (!txt.trim()) throw new Error('파일 내용이 비어있어요');
 
     n._chs = splitCh(txt);
-    curCh = n._chs.length > 1
-      ? Math.min(Math.floor((n.progress / 100) * (n._chs.length - 1)), n._chs.length - 1)
-      : 0;
+
+    // 저장된 읽기 위치 복원 (챕터 + 스크롤)
+    const savedPos = JSON.parse(localStorage.getItem(`ns_pos_${id}`) || 'null');
+    if (savedPos && savedPos.ch < n._chs.length) {
+      curCh = savedPos.ch;
+    } else {
+      curCh = n._chs.length > 1
+        ? Math.min(Math.floor((n.progress / 100) * (n._chs.length - 1)), n._chs.length - 1)
+        : 0;
+    }
 
     applyViewerSettings();
 
@@ -1851,7 +1868,7 @@ window.openViewer = async function(id) {
       });
     }
     n.lastReadAt = new Date().toISOString();
-    renderCh();
+    renderCh(savedPos?.scroll || 0);
   } catch(e) {
     showToast('불러오기 실패: ' + (e.code || e.message), 'error');
     document.getElementById('viewer').style.display = 'none';
@@ -1887,26 +1904,53 @@ window.closeViewerPopup = function() {
 };
 
 // ── CHAPTER LIST ──
+const CH_PAGE_SIZE = 100;
+let chListPage = 0;
+
 window.openChList = function() {
   const n = novels.find(x=>x.id===curId); if(!n?._chs) return;
+  chListPage = Math.floor(curCh / CH_PAGE_SIZE);
   document.getElementById('chListTitle').textContent = n.title;
-  const list = document.getElementById('chList');
-  list.innerHTML = n._chs.map((ch, i) => {
-    // 구분선(* * * 등)은 제목 없이 표시, 일반 챕터는 번호 표시
-    const isSep = /^[\*\-=─━•\s]{3,}$/.test(ch.title.trim());
-    const label = isSep ? `— ${i+1} —` : ch.title;
-    return `<div class="ch-item ${i===curCh?'active':''}" onclick="jumpToCh(${i})">
-      <span class="ch-num">${i+1}</span>
-      <span class="ch-title">${escapeHtml(label)}</span>
-      ${i < curCh ? '<span class="ch-check">✓</span>' : ''}
-    </div>`;
-  }).join('');
+  renderChList();
   document.getElementById('chListOv').classList.add('on');
   document.getElementById('chListPanel').classList.add('on');
+};
+
+function renderChList() {
+  const n = novels.find(x=>x.id===curId); if(!n?._chs) return;
+  const total = n._chs.length;
+  const start = chListPage * CH_PAGE_SIZE;
+  const end   = Math.min(start + CH_PAGE_SIZE, total);
+  const list  = document.getElementById('chList');
+
+  // 페이지 네비
+  const pageNav = total > CH_PAGE_SIZE ? `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line);margin-bottom:4px">
+      <button onclick="chListPageMove(-1)" style="padding:6px 14px;border:1px solid var(--line);border-radius:8px;background:var(--bg2);font-size:12px;cursor:pointer;${chListPage===0?'opacity:.4;pointer-events:none':''}">◀ 이전</button>
+      <span style="font-size:12px;color:var(--ink3)">${start+1}~${end} / ${total}</span>
+      <button onclick="chListPageMove(1)" style="padding:6px 14px;border:1px solid var(--line);border-radius:8px;background:var(--bg2);font-size:12px;cursor:pointer;${end>=total?'opacity:.4;pointer-events:none':''}">다음 ▶</button>
+    </div>` : '';
+
+  list.innerHTML = pageNav + n._chs.slice(start, end).map((ch, i) => {
+    const idx = start + i;
+    return `<div class="ch-item ${idx===curCh?'active':''}" onclick="jumpToCh(${idx})">
+      <span class="ch-num">${idx+1}</span>
+      <span class="ch-title">${escapeHtml(ch.title)}</span>
+      ${idx < curCh ? '<span class="ch-check">✓</span>' : ''}
+    </div>`;
+  }).join('');
+
   setTimeout(() => {
     const active = list.querySelector('.active');
     if (active) active.scrollIntoView({block:'center'});
   }, 100);
+}
+
+window.chListPageMove = function(dir) {
+  const n = novels.find(x=>x.id===curId); if(!n?._chs) return;
+  const maxPage = Math.ceil(n._chs.length / CH_PAGE_SIZE) - 1;
+  chListPage = Math.max(0, Math.min(maxPage, chListPage + dir));
+  renderChList();
 };
 window.closeChList = function() {
   document.getElementById('chListOv').classList.remove('on');
@@ -1916,12 +1960,11 @@ window.jumpToCh = function(i) {
   curCh = i; closeChList(); renderCh();
 };
 
-function renderCh() {
+function renderCh(restoreScroll = 0) {
   const n = novels.find(x=>x.id===curId);
   if(!n?._chs) return;
 
   const ch = n._chs[curCh];
-  // 단일 챕터면 제목 숨김
   const vChTitle = document.getElementById('vChTitle');
   vChTitle.textContent = ch.title;
   vChTitle.style.display = n._chs.length === 1 ? 'none' : '';
@@ -1932,35 +1975,33 @@ function renderCh() {
     ? paras.map(p => `<p>${escapeHtml(p).replace(/\n/g,'<br>')}</p>`).join('')
     : `<p style="color:var(--ink3);font-style:italic">(내용 없음)</p>`;
 
-  // 챕터 넘김 애니메이션 + 스크롤 맨 위로
+  // 챕터 넘김 애니메이션
   const vPage = document.getElementById('vPage');
   const vBody = document.getElementById('vBody');
   vPage.classList.remove('anim-next', 'anim-prev');
   requestAnimationFrame(() => {
     vPage.classList.add(_animDir === 'next' ? 'anim-next' : 'anim-prev');
-    vBody.scrollTop = 0;
+    vBody.scrollTop = restoreScroll;
   });
 
-  // 진행률 계산
+  // 진행률 계산 및 저장
   const pct = n._chs.length > 1
     ? Math.round((curCh / (n._chs.length - 1)) * 100)
     : (n.progress || 1);
-
-  // 진행률 저장 (실패 시 롤백)
   const prevProgress = n.progress;
   n.progress = pct;
   if (!n._shared) {
     updateDoc(doc(db, 'users', currentUser.uid, 'novels', curId), {
       progress: pct, lastReadAt: new Date().toISOString()
-    }).catch(() => {
-      n.progress = prevProgress; // 저장 실패 시 롤백
-    });
+    }).catch(() => { n.progress = prevProgress; });
   }
+
+  // 읽기 위치 저장 (챕터)
+  localStorage.setItem(`ns_pos_${curId}`, JSON.stringify({ ch: curCh, scroll: 0 }));
 
   setViewerUI(true);
   if (autoHide) resetHideTimer();
 }
-
 // 스크롤 이벤트 — onVScroll 미사용
 window.onVScroll = function() {};
 
@@ -1970,17 +2011,29 @@ window.nextCh = function() {
   if (curCh < n._chs.length - 1) {
     _animDir = 'next'; curCh++; renderCh();
   } else {
-    // 마지막 챕터에서 오른쪽 탭 → 완독
+    // 마지막 챕터 → 완독 팝업
     if (!n._shared) updateDoc(doc(db,'users',currentUser.uid,'novels',curId),{progress:100}).catch(()=>{});
     n.progress = 100; renderHome(); renderProfile();
-    showToast('🎉 완독을 축하드려요!');
-    setTimeout(closeViewer, 1800);
+    localStorage.removeItem(`ns_pos_${curId}`); // 읽기 위치 초기화
+    document.getElementById('completeMsg').textContent = `"${n.title}"`;
+    document.getElementById('completeOv').classList.add('on');
+  }
+};
+window.closeCompletePopup = function(exit) {
+  document.getElementById('completeOv').classList.remove('on');
+  if (exit) {
+    closeViewer();
+  } else {
+    // 처음부터 다시 읽기
+    curCh = 0; _animDir = 'next'; renderCh();
   }
 };
 window.prevCh = function() {
   if (curCh > 0) { _animDir = 'prev'; curCh--; renderCh(); }
 };
 window.closeViewer = function() {
+  // 현재 위치 저장
+  localStorage.setItem(`ns_pos_${curId}`, JSON.stringify({ ch: curCh, scroll: 0 }));
   document.getElementById('viewer').style.display = 'none';
   document.querySelector('.nav').style.display = 'flex';
   document.getElementById('tabBar').style.display = 'flex';
@@ -2283,16 +2336,20 @@ window.saveNovel = async function() {
     return;
   }
 
+  // 파일 크기 경고 (10MB 이상)
+  if (curFile && curFile.size > 10 * 1024 * 1024) {
+    if (!confirm(`파일 크기가 ${Math.round(curFile.size/1024/1024)}MB입니다. 대용량 파일은 로딩이 느릴 수 있어요. 계속할까요?`)) return;
+  }
+
   const saveBtn = document.getElementById('saveBtn');
   saveBtn.disabled = true;
+  let filePath = null;
 
   try {
-    let filePath = null;
+    let isCompressed = false;
 
     if (curFile) {
       saveBtn.textContent = '파일 읽는 중...';
-
-      // 텍스트 읽기
       const txt = await new Promise((res, rej) => {
         const r = new FileReader();
         r.onload = e => res(e.target.result);
@@ -2301,19 +2358,16 @@ window.saveNovel = async function() {
       });
 
       saveBtn.textContent = '압축 중...';
-
-      // 압축 (CompressionStream 미지원 시 원본 사용)
       const uploadBlob = await compressText(txt, curFile);
+      isCompressed = uploadBlob.type === 'application/gzip';
       const ratio = Math.round((1 - uploadBlob.size / curFile.size) * 100);
       if (ratio > 0) showToast(`압축 완료 (${ratio}% 감소)`);
 
-      saveBtn.textContent = `업로드 중... (${Math.round(uploadBlob.size/1024)}KB)`;
-
       const safe = curFile.name.replace(/[^a-zA-Z0-9가-힣._-]/g, '_');
-      const ext  = uploadBlob.type === 'application/gzip' ? '.txt.gz' : '.txt';
+      const ext  = isCompressed ? '.txt.gz' : '.txt';
       filePath   = `users/${currentUser.uid}/novels/${Date.now()}_${safe}${ext}`;
 
-      // 진행률 표시하며 업로드
+      saveBtn.textContent = `업로드 중... (${Math.round(uploadBlob.size/1024)}KB)`;
       await new Promise((resolve, reject) => {
         const uploadTask = uploadBytesResumable(ref(storage, filePath), uploadBlob);
         uploadTask.on('state_changed',
@@ -2328,23 +2382,23 @@ window.saveNovel = async function() {
     }
 
     saveBtn.textContent = '정보 저장 중...';
-
-    const tags = document.getElementById('iTags').value
-      .split(',').map(t => t.trim()).filter(Boolean);
+    const tags = document.getElementById('iTags').value.split(',').map(t=>t.trim()).filter(Boolean);
 
     const data = {
       title,
-      author:     document.getElementById('iAuthor').value.trim() || '작자 미상',
-      genre:      selG || 'romance',
-      synopsis:   document.getElementById('iSyn').value.trim(),
+      author:       document.getElementById('iAuthor').value.trim() || '작자 미상',
+      genre:        selG || 'etc',  // 기본값 기타
+      synopsis:     document.getElementById('iSyn').value.trim(),
       tags,
-      progress:   0,
-      coverUrl:   coverUrl || null,
-      filePath:   filePath || null,
-      totalChars: curFile ? Math.round(curFile.size / 2) : 0,
-      addedAt:    new Date().toISOString(),
-      lastReadAt: null,
-      favorite:   false,
+      progress:     0,
+      coverUrl:     coverUrl || null,
+      filePath:     filePath || null,
+      isCompressed,                  // 압축 여부 플래그
+      originalSize: curFile ? curFile.size : 0,
+      totalChars:   curFile ? Math.round(curFile.size / 2) : 0,
+      addedAt:      new Date().toISOString(),
+      lastReadAt:   null,
+      favorite:     false,
     };
 
     const col    = isAdmin ? collection(db, 'sharedNovels') : collection(db, 'users', currentUser.uid, 'novels');
@@ -2356,6 +2410,10 @@ window.saveNovel = async function() {
     showToast('서재에 추가했습니다 📚');
 
   } catch (e) {
+    // Firestore 저장 실패 시 업로드된 Storage 파일 롤백
+    if (filePath) {
+      try { await deleteObject(ref(storage, filePath)); } catch(_) {}
+    }
     showToast('저장 실패: ' + e.message, 'error');
   } finally {
     saveBtn.textContent = '서재에 추가';

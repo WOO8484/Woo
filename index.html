@@ -1219,7 +1219,7 @@ let hideDelay  = parseInt(localStorage.getItem('ns_hideDelay')   || '4', 10);
 let scrollSpeed = parseInt(localStorage.getItem('ns_scrollSpeed')|| '3', 10);
 let viewMode   = localStorage.getItem('ns_viewMode') || 'grid'; // 'grid' | 'list'
 // statsOpen 제거됨 (프로필 탭으로 이동)
-let selG = '', coverUrl = '', curFile = null, curFileText = '';
+let selG = '', coverUrl = '', curFile = null;
 let searchDebounce = null;
 // viewer UI state
 let uiVisible = true, tapHintShown = false, uiHideTimer = null;
@@ -2102,7 +2102,7 @@ window.closeAdd = function() {
   document.getElementById('iTitle').classList.remove('error');
   document.getElementById('iTitle-hint')?.classList.remove('visible');
   document.getElementById('fileInput').value='';
-  selG=''; coverUrl=''; curFile=null; curFileText='';
+  selG=''; coverUrl=''; curFile=null; 
 };
 window.selGenre = function(btn) { document.querySelectorAll('.gchip').forEach(b=>b.classList.remove('on')); btn.classList.add('on'); selG=btn.dataset.g; };
 window.clearFieldError = function(id) { document.getElementById(id)?.classList.remove('error'); document.getElementById(id+'-hint')?.classList.remove('visible'); };
@@ -2113,17 +2113,12 @@ window.onFileDrop = function(e) {
 };
 window.onFile = function(e) { const f=e.target.files[0]; if(f) processFile(f); };
 function processFile(f) {
-  curFile=f;
-  const r=new FileReader();
-  r.onload=ev=>{
-    const txt = ev.target.result;
-    curFileText = txt;
-    document.getElementById('fileLabel').textContent=`✓ ${f.name} (${Math.round(f.size/1024)}KB · ${txt.length.toLocaleString()}자)`;
-    if(!document.getElementById('iTitle').value) document.getElementById('iTitle').value=f.name.replace(/\.txt$/i,'');
-    showToast('파일 읽기 완료 ✓');
-  };
-  r.onerror=()=>showToast('파일 읽기 실패','error');
-  r.readAsText(f,'UTF-8');
+  curFile = f;
+  document.getElementById('fileLabel').textContent =
+    `✓ ${f.name} (${Math.round(f.size/1024)}KB)`;
+  if (!document.getElementById('iTitle').value)
+    document.getElementById('iTitle').value = f.name.replace(/\.txt$/i, '');
+  showToast(`파일 선택됨: ${Math.round(f.size/1024)}KB`);
 }
 window.saveNovel = async function() {
   const title = document.getElementById('iTitle').value.trim();
@@ -2140,67 +2135,43 @@ window.saveNovel = async function() {
 
   try {
     let filePath = null;
-    let inlineText = null;
 
-    if (curFile && curFileText) {
-      const charCount = curFileText.length;
-
-      if (charCount <= 500000) {
-        // 50만자 이하 → Firestore 직접 저장
-        inlineText = curFileText;
-        showToast('텍스트 저장 중...');
-      } else {
-        // 50만자 초과 → Storage 업로드
-        showToast('파일 업로드 중...');
-        const safe = curFile.name.replace(/[^a-zA-Z0-9가-힣._-]/g, '_');
-        const uid = currentUser.uid;
-        filePath = `users/${uid}/novels/${Date.now()}_${safe}`;
-        try {
-          const storageRef = ref(storage, filePath);
-          await uploadBytes(storageRef, curFile);
-        } catch (storageErr) {
-          // Storage 실패 시 텍스트 앞 50만자만 저장
-          inlineText = curFileText.slice(0, 500000);
-          filePath = null;
-          showToast('⚠️ Storage 실패, 일부만 저장: ' + storageErr.message, 'error');
-        }
-      }
+    // ── 파일은 항상 Storage에 저장 (Firestore엔 경로만) ──
+    if (curFile) {
+      saveBtn.textContent = '파일 업로드 중...';
+      const safe = curFile.name.replace(/[^a-zA-Z0-9가-힣._-]/g, '_');
+      const uid  = currentUser.uid;
+      filePath   = `users/${uid}/novels/${Date.now()}_${safe}`;
+      await uploadBytes(ref(storage, filePath), curFile);
     }
+
+    saveBtn.textContent = '정보 저장 중...';
 
     const tags = document.getElementById('iTags').value
       .split(',').map(t => t.trim()).filter(Boolean);
 
+    // ── Firestore엔 메타데이터만 (텍스트 없음) ──
     const data = {
       title,
-      author: document.getElementById('iAuthor').value.trim() || '작자 미상',
-      genre: selG || 'romance',
-      synopsis: document.getElementById('iSyn').value.trim(),
+      author:     document.getElementById('iAuthor').value.trim() || '작자 미상',
+      genre:      selG || 'romance',
+      synopsis:   document.getElementById('iSyn').value.trim(),
       tags,
-      progress: 0,
-      coverUrl: coverUrl || null,
-      filePath: filePath || null,
-      inlineText: inlineText || null,
-      totalChars: curFileText ? curFileText.length : 0,
-      addedAt: new Date().toISOString(),
+      progress:   0,
+      coverUrl:   coverUrl || null,
+      filePath:   filePath || null,
+      totalChars: curFile ? curFile.size : 0,
+      addedAt:    new Date().toISOString(),
       lastReadAt: null,
-      favorite: false,
+      favorite:   false,
     };
 
-    // Firestore 저장
-    let docRef, novelId;
     const col = isAdmin
       ? collection(db, 'sharedNovels')
       : collection(db, 'users', currentUser.uid, 'novels');
 
-    showToast('Firestore 저장 중...');
-
-    // 10초 타임아웃
-    const savePromise = addDoc(col, isAdmin ? { ...data, uploadedBy: currentUser.uid } : data);
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('저장 시간 초과 (10초). 네트워크 확인 또는 새로고침 후 시도해주세요.')), 10000)
-    );
-    docRef = await Promise.race([savePromise, timeoutPromise]);
-    novelId = isAdmin ? 'shared_' + docRef.id : docRef.id;
+    const docRef  = await addDoc(col, isAdmin ? { ...data, uploadedBy: currentUser.uid } : data);
+    const novelId = isAdmin ? 'shared_' + docRef.id : docRef.id;
 
     novels.unshift({ id: novelId, _mine: !isAdmin, _shared: isAdmin, ...data });
     closeAdd();

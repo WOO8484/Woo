@@ -242,31 +242,34 @@ body {
 .dbar { position:absolute; top:0; left:0; right:0; z-index:10; display:flex; align-items:center; justify-content:space-between; padding:0 14px; height:50px; }
 .dbar-back { width:34px; height:34px; border-radius:50%; background:rgba(0,0,0,.25); border:none; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; color:#fff; backdrop-filter:blur(4px); }
 
-/* Hero section — genre-color bg, cover left / info right */
-.dhero-section { position:relative; padding:56px 16px 0; min-height:220px; display:flex; align-items:flex-end; gap:14px; }
+/* Hero section — pure background, no padding bottom */
+.dhero-section { position:relative; height:200px; }
 .dhero-bg { position:absolute; inset:0; }
-.dhero-bg-blur { position:absolute; inset:0; opacity:.35; background-size:cover; background-position:center; filter:blur(20px) brightness(.8); }
+.dhero-bg-blur { position:absolute; inset:0; opacity:.4; background-size:cover; background-position:center top; filter:blur(24px) brightness(.75); }
 .dhero-bg-color { position:absolute; inset:0; }
-.dhero-bg-grad { position:absolute; inset:0; background:linear-gradient(to bottom, transparent 40%, rgba(0,0,0,.55) 100%); }
+.dhero-bg-grad { position:absolute; inset:0; background:linear-gradient(to bottom, rgba(0,0,0,.1) 0%, rgba(0,0,0,.0) 100%); }
 
-/* Cover thumbnail */
-.dcover-img-wrap { flex-shrink:0; width:110px; height:148px; border-radius:10px; overflow:hidden; box-shadow:0 6px 20px rgba(0,0,0,.35); position:relative; z-index:1; margin-bottom:16px; }
+/* Card body — flush against hero, no gap */
+.dbody { background:#fff; border-radius:24px 24px 0 0; position:relative; z-index:2; margin-top:0; padding:0 16px 100px; }
+
+/* Cover + title row — cover overlaps hero upward */
+.dbook-row { display:flex; gap:14px; align-items:flex-end; padding:0 0 20px; margin-top:-60px; position:relative; z-index:3; }
+
+/* Cover thumbnail — larger, pokes above card */
+.dcover-img-wrap { flex-shrink:0; width:120px; height:162px; border-radius:12px; overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,.3); position:relative; }
 .dcover-img-wrap img { width:100%; height:100%; object-fit:cover; display:block; }
-.dcover-img-placeholder { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:36px; }
+.dcover-img-placeholder { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:40px; }
 
-/* Title/info beside cover */
-.dhero-info { flex:1; padding-bottom:18px; position:relative; z-index:1; }
-.dh-title  { font-size:18px; font-weight:800; color:#fff; line-height:1.35; margin-bottom:6px; text-shadow:0 1px 4px rgba(0,0,0,.4); }
-.dh-author { font-size:13px; color:rgba(255,255,255,.85); margin-bottom:8px; }
-.dh-meta   { font-size:11px; color:rgba(255,255,255,.7); display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+/* Title/info beside cover — sits on top of white card */
+.dhero-info { flex:1; padding-bottom:4px; padding-top:70px; }
+.dh-title  { font-size:17px; font-weight:800; color:var(--ink); line-height:1.35; margin-bottom:5px; }
+.dh-author { font-size:13px; color:var(--ink2); margin-bottom:6px; }
+.dh-meta   { font-size:11px; color:var(--ink3); display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:10px; }
 .dh-meta-dot { opacity:.5; }
-.dh-progress { margin-top:10px; }
-.dh-prog-bar { height:3px; background:rgba(255,255,255,.25); border-radius:2px; overflow:hidden; margin-bottom:3px; }
-.dh-prog-fill { height:100%; background:#fff; border-radius:2px; transition:width .4s; }
-.dh-prog-text { font-size:10px; color:rgba(255,255,255,.8); font-weight:600; }
-
-/* White card body */
-.dbody { background:#fff; border-radius:20px 20px 0 0; margin-top:-16px; padding:20px 16px 24px; position:relative; z-index:2; }
+.dh-progress { }
+.dh-prog-bar { height:3px; background:var(--line); border-radius:2px; overflow:hidden; margin-bottom:3px; }
+.dh-prog-fill { height:100%; background:var(--accent); border-radius:2px; transition:width .4s; }
+.dh-prog-text { font-size:10px; color:var(--ink3); font-weight:600; }
 
 /* Stats row */
 .dstats { display:flex; gap:0; margin-bottom:20px; padding-bottom:18px; border-bottom:1px solid var(--line); }
@@ -524,33 +527,33 @@ body {
   </div>
 
   <div class="detail-scroll">
-    <!-- 히어로 섹션: 배경색 + 표지(좌) + 정보(우) -->
+    <!-- 히어로: 배경색만 -->
     <div class="dhero-section" id="dHeroSection">
       <div class="dhero-bg" id="dHeroBg">
         <div class="dhero-bg-color" id="dHeroBgColor"></div>
         <div class="dhero-bg-blur" id="dHeroBgBlur"></div>
         <div class="dhero-bg-grad"></div>
       </div>
-
-      <!-- 표지 썸네일 -->
-      <div class="dcover-img-wrap" id="dCoverImgWrap">
-        <div class="dcover-img-placeholder" id="dCoverPlaceholder">📖</div>
-      </div>
-
-      <!-- 제목/작가/정보 -->
-      <div class="dhero-info">
-        <div class="dh-title"  id="dTitle"></div>
-        <div class="dh-author" id="dAuthor"></div>
-        <div class="dh-meta"   id="dMeta"></div>
-        <div class="dh-progress" id="dProgressWrap">
-          <div class="dh-prog-bar"><div class="dh-prog-fill" id="dProgFill"></div></div>
-          <div class="dh-prog-text" id="dProgText"></div>
-        </div>
-      </div>
     </div>
 
-    <!-- 흰 카드 바디 -->
+    <!-- 흰 카드: 표지가 위로 튀어나옴 -->
     <div class="dbody">
+      <!-- 표지(좌) + 제목/정보(우) — 카드 위로 올라가는 행 -->
+      <div class="dbook-row">
+        <div class="dcover-img-wrap" id="dCoverImgWrap">
+          <div class="dcover-img-placeholder" id="dCoverPlaceholder">📖</div>
+        </div>
+        <div class="dhero-info">
+          <div class="dh-title"  id="dTitle"></div>
+          <div class="dh-author" id="dAuthor"></div>
+          <div class="dh-meta"   id="dMeta"></div>
+          <div class="dh-progress" id="dProgressWrap">
+            <div class="dh-prog-bar"><div class="dh-prog-fill" id="dProgFill"></div></div>
+            <div class="dh-prog-text" id="dProgText"></div>
+          </div>
+        </div>
+      </div>
+
       <!-- 통계 -->
       <div class="dstats" id="dStats"></div>
 

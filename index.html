@@ -1640,11 +1640,9 @@ function renderHome() {
   const reading = nlist.filter(n => n.progress > 0 && n.progress < 100).length;
   const done    = nlist.filter(n => n.progress >= 100).length;
 
-  const isEmpty = total === 0;
-  document.getElementById('homeEmpty').style.display   = isEmpty ? 'block' : 'none';
-  document.getElementById('homeEmptyMsg').textContent  = isAdmin ? 'TXT 파일을 업로드해서 소설을 추가해보세요' : '아직 추가된 소설이 없어요';
-  document.getElementById('homeStats').style.display   = isEmpty ? 'none' : '';
-  document.getElementById('homeStreak').style.display  = isEmpty ? 'none' : '';
+  document.getElementById('homeEmpty').style.display  = 'none';
+  document.getElementById('homeStats').style.display  = '';
+  document.getElementById('homeStreak').style.display = '';
   document.getElementById('statTotal').textContent     = total;
   document.getElementById('statReading').textContent   = reading;
   document.getElementById('statDone').textContent      = done;
@@ -1675,7 +1673,7 @@ function renderHome() {
   }).join('');
 
   const recent = [...nlist].sort((a,b) => new Date(b.addedAt) - new Date(a.addedAt)).slice(0, 6);
-  document.getElementById('secRecent').style.display = recent.length ? '' : 'none';
+  document.getElementById('secRecent').style.display = '';
   document.getElementById('recentGrid').innerHTML = recent.map(n => {
     const cc   = genreCoverClass(n.genre);
     const icon = GENRE_ICON[n.genre] || '📖';

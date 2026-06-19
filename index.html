@@ -676,7 +676,10 @@ async function checkApproval(user) {
       });
       showWaitScreen(user); return;
     }
-    const data = snap.docs[0].data();
+    // 중복 pending 문서 정리 (같은 이메일로 여러 문서가 있을 경우 approved/admin 우선)
+    const docs = snap.docs.map(d => ({ _id:d.id, ...d.data() }));
+    const data = docs.find(d => d.status === 'approved') || docs[0];
+
     if (data.status === 'pending') { showWaitScreen(user); return; }
     if (data.status === 'rejected') {
       await signOut(auth);
@@ -844,8 +847,9 @@ async function loadAdminPanel() {
   try {
     const snap = await getDocs(collection(db, 'approvedUsers'));
     const all  = snap.docs.map(d => ({ _id:d.id, ...d.data() }));
-    const pending  = all.filter(u => u.status === 'pending');
-    const approved = all.filter(u => u.status === 'approved');
+    // 본인(현재 로그인 계정) 제외
+    const pending  = all.filter(u => u.status === 'pending'  && u.email !== currentUser.email);
+    const approved = all.filter(u => u.status === 'approved' && u.email !== currentUser.email);
 
     const badge = document.getElementById('pendingBadge');
     badge.textContent    = pending.length;

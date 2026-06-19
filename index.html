@@ -480,7 +480,12 @@ function genreCoverClass(g) {
 }
 const GENRE_ICON = { romance:'💕', fantasy:'🔮', thriller:'🔪', sf:'🚀', historical:'📜', mystery:'🕵️', etc:'📖' };
 
-// ── TAB 전환 ──
+// 귀여운 아바타 캐릭터 (이니셜 기반)
+const AVATARS = ['🐱','🐶','🐰','🐻','🦊','🐼','🐨','🐸','🐙','🦄','🐧','🦋','🐬','🦁','🐮','🐯','🐺','🦝','🐴','🐘'];
+function getAvatar(name) {
+  const code = (name || 'A').charCodeAt(0);
+  return AVATARS[code % AVATARS.length];
+}
 window.switchTab = function(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('on'));
@@ -586,11 +591,13 @@ function calcStreak() {
 // ── PROFILE 렌더 ──
 function renderProfile() {
   if (!currentUser) return;
-  const name = currentUser.displayName || currentUser.email.split('@')[0];
-  document.getElementById('profileAvatar').textContent = name.charAt(0).toUpperCase();
-  document.getElementById('profileName').textContent   = name;
-  document.getElementById('profileEmail').textContent  = currentUser.email;
-  document.getElementById('profileRole').textContent   = isAdmin ? '관리자' : '독자';
+  const name   = currentUser.displayName || currentUser.email.split('@')[0];
+  const avatar = getAvatar(name);
+  document.getElementById('profileAvatar').textContent  = avatar;
+  document.getElementById('profileAvatar').style.fontSize = '32px';
+  document.getElementById('profileName').textContent    = name;
+  document.getElementById('profileEmail').textContent   = currentUser.email;
+  document.getElementById('profileRole').textContent    = isAdmin ? '관리자' : '독자';
 
   const total   = novels.length;
   const reading = novels.filter(n => n.progress > 0 && n.progress < 100).length;
@@ -650,12 +657,17 @@ function showApp(user) {
   document.getElementById('waitScreen').style.display = 'none';
   document.getElementById('mainNav').style.display    = 'flex';
   document.getElementById('tabBar').style.display     = 'flex';
+
+  const name   = user.displayName || user.email.split('@')[0];
+  const avatar = getAvatar(user.email);
+
   // 네비 아바타
-  const name = user.displayName || user.email.split('@')[0];
-  document.getElementById('navAvatar').textContent   = name.charAt(0).toUpperCase();
-  document.getElementById('menuName').textContent    = user.displayName || name;
-  document.getElementById('menuEmail').textContent   = user.email;
-  document.getElementById('homeUserName').textContent = user.displayName || name;
+  document.getElementById('navAvatar').textContent    = avatar;
+  document.getElementById('navAvatar').style.fontSize = '20px';
+  document.getElementById('menuName').textContent     = name;
+  document.getElementById('menuEmail').textContent    = user.email;
+  // 홈 인사
+  document.getElementById('homeUserName').textContent = name;
   switchTab('home');
   loadNovels();
 }
@@ -858,7 +870,7 @@ async function loadAdminPanel() {
     document.getElementById('pendingList').innerHTML = pending.length
       ? pending.map(u => `
         <div class="pending-item">
-          <div class="pending-avatar">👤</div>
+          <div class="pending-avatar" style="font-size:22px">${getAvatar(u.email)}</div>
           <div class="pending-info">
             <div class="pending-name">${escapeHtml(u.name||'이름 없음')}</div>
             <div class="pending-email">${escapeHtml(u.email)}</div>
@@ -874,7 +886,7 @@ async function loadAdminPanel() {
     document.getElementById('approvedList').innerHTML = approved.length
       ? approved.map(u => `
         <div class="approved-item">
-          <div class="pending-avatar">👤</div>
+          <div class="pending-avatar" style="font-size:22px">${getAvatar(u.email)}</div>
           <div class="pending-info">
             <div class="pending-name">${escapeHtml(u.name||'이름 없음')}</div>
             <div class="pending-email">${escapeHtml(u.email)}</div>
@@ -910,7 +922,13 @@ window.revokeUser = async function(id) {
   } catch(e) { showToast('취소 실패', 'error'); }
 };
 
-// ── 유저 메뉴 ──
+// 귀여운 캐릭터 아바타 — 이메일 기반으로 일관된 캐릭터 배정
+const AVATARS = ['🐱','🐶','🐰','🐻','🦊','🐼','🐨','🐸','🐙','🦄','🐧','🦋','🐺','🦁','🐮','🐷'];
+function getAvatar(email) {
+  let hash = 0;
+  for (const c of email) hash = (hash * 31 + c.charCodeAt(0)) & 0xFFFFFFFF;
+  return AVATARS[Math.abs(hash) % AVATARS.length];
+}
 window.toggleUserMenu = function(e) {
   e.stopPropagation();
   document.getElementById('userMenu').classList.toggle('open');

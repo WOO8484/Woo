@@ -6,6 +6,12 @@
 <meta name="theme-color" content="#6C5CE7">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.json">
+<!-- Firebase SDK 미리 로드 -->
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js">
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js">
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/11.0.0/firebase-storage.js">
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
@@ -319,21 +325,21 @@ body {
 .vprog { display:none; }
 .vpfill { display:none; }
 /* 고정 화면 — 스크롤 절대 없음 */
-.vbody { position:fixed; inset:0; overflow:hidden; padding:52px 22px 40px; max-width:680px; margin:0 auto; width:100%; box-sizing:border-box; display:flex; flex-direction:column; }
-.vpage { flex:1; overflow:hidden; display:flex; flex-direction:column; }
+.vbody { position:fixed; inset:0; overflow:hidden; padding:52px 22px 40px; max-width:680px; margin:0 auto; width:100%; box-sizing:border-box; display:flex; flex-direction:column; contain:strict; }
+.vpage { flex:1; overflow:hidden; display:flex; flex-direction:column; will-change:transform,opacity; contain:content; }
 .vch { font-size:14px; font-weight:800; margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid var(--line); color:var(--ink2); flex-shrink:0; }
-.vtext { font-size:17px; line-height:1.9; color:#2A2A2A; word-break:keep-all; flex:1; overflow:hidden; }
+.vtext { font-size:17px; line-height:1.9; color:#2A2A2A; word-break:keep-all; flex:1; overflow:hidden; contain:content; }
 .vtext p { margin-bottom:1.5em; }
 .vfoot { display:none; }
 .vpage-info { display:none; }
 
-/* 챕터 전환 애니메이션 */
-@keyframes chIn  { from { opacity:0; transform:translateX(20px);  } to { opacity:1; transform:translateX(0); } }
-@keyframes chOut { from { opacity:0; transform:translateX(-20px); } to { opacity:1; transform:translateX(0); } }
-.vpage.anim-next { animation: chIn  .2s ease; }
-.vpage.anim-prev { animation: chOut .2s ease; }
+/* 챕터 전환 애니메이션 — GPU 가속 */
+@keyframes chIn  { from { opacity:0; transform:translate3d(20px,0,0);  } to { opacity:1; transform:translate3d(0,0,0); } }
+@keyframes chOut { from { opacity:0; transform:translate3d(-20px,0,0); } to { opacity:1; transform:translate3d(0,0,0); } }
+.vpage.anim-next { animation: chIn  .18s cubic-bezier(.25,.46,.45,.94) both; }
+.vpage.anim-prev { animation: chOut .18s cubic-bezier(.25,.46,.45,.94) both; }
 
-/* 터치 영역 — 좌/중/우 전체 높이 */
+/* 터치 영역 */
 .vtap-left   { position:fixed; left:0;   top:0; width:25%; height:100%; z-index:505; cursor:pointer; touch-action:manipulation; }
 .vtap-right  { position:fixed; right:0;  top:0; width:25%; height:100%; z-index:505; cursor:pointer; touch-action:manipulation; }
 .vtap-center { position:fixed; left:25%; right:25%; top:0; height:100%; z-index:505; cursor:pointer; touch-action:manipulation; }
@@ -686,7 +692,7 @@ body {
 
 <nav class="nav" style="display:none">
   <div class="nav-logo" id="navLogo">Novel<em>S</em></div>
-  <div style="position:absolute;left:50%;transform:translateX(-50%);font-size:11px;color:var(--ink3);background:var(--bg2);padding:2px 8px;border-radius:6px;font-weight:500">v1.2.5</div>
+  <div style="position:absolute;left:50%;transform:translateX(-50%);font-size:11px;color:var(--ink3);background:var(--bg2);padding:2px 8px;border-radius:6px;font-weight:500">v1.2.6</div>
   <div class="nav-user">
     <button class="nav-add" id="navAddBtn" onclick="openAdd()">＋ 소설 추가</button>
     <div class="nav-avatar" id="navAvatar" onclick="toggleUserMenu(event)"></div>
@@ -1603,6 +1609,15 @@ document.addEventListener('click', (e) => {
   }
 });
 
+// Service Worker 등록 (PWA)
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(reg => console.log('SW:', reg.scope))
+      .catch(() => {}); // 로컬 환경에서 실패해도 무시
+  });
+}
+
 // ── DETAIL ──
 const GENRE_BG_CLASS = { romance:'dhero-romance', fantasy:'dhero-fantasy', thriller:'dhero-thriller', sf:'dhero-sf', historical:'dhero-historical', mystery:'dhero-mystery' };
 
@@ -1972,38 +1987,66 @@ function renderCh(restoreScroll = 0) {
   vChTitle.textContent = ch.title;
   vChTitle.style.display = n._chs.length === 1 ? 'none' : '';
 
-  const paras = ch.content.split(/\n{2,}/).filter(p=>p.trim());
+  // DocumentFragment로 DOM 조작 최소화 + 지연 렌더링
   const vText = document.getElementById('vText');
-  vText.innerHTML = paras.length
-    ? paras.map(p => `<p>${escapeHtml(p).replace(/\n/g,'<br>')}</p>`).join('')
-    : `<p style="color:var(--ink3);font-style:italic">(내용 없음)</p>`;
+  const paras = ch.content.split(/\n{2,}/).filter(p => p.trim());
+  const FIRST_BATCH = 10;
+  const firstParas = paras.slice(0, FIRST_BATCH);
+  const restParas  = paras.slice(FIRST_BATCH);
 
-  // 챕터 넘김 애니메이션
+  const frag = document.createDocumentFragment();
+  if (firstParas.length) {
+    firstParas.forEach(p => {
+      const el = document.createElement('p');
+      el.textContent = p;
+      frag.appendChild(el);
+    });
+  } else {
+    const el = document.createElement('p');
+    el.style.cssText = 'color:var(--ink3);font-style:italic';
+    el.textContent = '(내용 없음)';
+    frag.appendChild(el);
+  }
+  vText.innerHTML = '';
+  vText.appendChild(frag);
+
+  // 나머지 문단 유휴 시간에 지연 렌더
+  if (restParas.length) {
+    const renderRest = () => {
+      const restFrag = document.createDocumentFragment();
+      restParas.forEach(p => {
+        const el = document.createElement('p');
+        el.textContent = p;
+        restFrag.appendChild(el);
+      });
+      vText.appendChild(restFrag);
+    };
+    'requestIdleCallback' in window
+      ? requestIdleCallback(renderRest, { timeout: 500 })
+      : setTimeout(renderRest, 50);
+  }
+
+  // 애니메이션 — force reflow로 클래스 확실히 리셋
   const vPage = document.getElementById('vPage');
-  const vBody = document.getElementById('vBody');
   vPage.classList.remove('anim-next', 'anim-prev');
-  requestAnimationFrame(() => {
-    vPage.classList.add(_animDir === 'next' ? 'anim-next' : 'anim-prev');
-    vBody.scrollTop = restoreScroll;
-  });
+  void vPage.offsetWidth; // reflow trigger
+  vPage.classList.add(_animDir === 'next' ? 'anim-next' : 'anim-prev');
 
   // 진행률 계산 및 저장
   const total = n._chs.length;
   const pct = total > 1
-    ? Math.min(99, Math.round((curCh / (total - 1)) * 100))  // 마지막 챕터도 99%까지만 (완독은 nextCh에서)
+    ? Math.min(99, Math.round((curCh / (total - 1)) * 100))
     : (n.progress || 1);
   const prevProgress = n.progress;
   n.progress = pct;
-  n.lastReadAt = new Date().toISOString(); // 메모리도 업데이트 (홈 이어보기 반영)
+  n.lastReadAt = new Date().toISOString();
   if (!n._shared) {
     updateDoc(doc(db, 'users', currentUser.uid, 'novels', curId), {
       progress: pct, lastReadAt: n.lastReadAt
     }).catch(() => { n.progress = prevProgress; });
   }
 
-  // 읽기 위치 저장 (챕터)
   localStorage.setItem(`ns_pos_${curId}`, JSON.stringify({ ch: curCh, scroll: 0 }));
-
   setViewerUI(true);
   if (autoHide) resetHideTimer();
 }

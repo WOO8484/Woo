@@ -10,7 +10,7 @@
 
 <!--
   ╔══════════════════════════════════════════════════════════════════╗
-  ║  NovelShelf v2.2.0  —  Firebase Auth + Firestore               ║
+  ║  NovelShelf v2.2.1  —  Firebase Auth + Firestore               ║
   ║                                                                  ║
   ║  [사전 준비]                                                      ║
   ║  1. Firebase 콘솔에서 프로젝트 생성                               ║
@@ -30,7 +30,8 @@
     progress(0-100), favorite(bool), lastReadAt(Timestamp), ch(int)
 
   pending_users/{docId}
-    name, email, pwHash, reason, status(pending|approved|rejected),
+    name, email, pwHash(승인 후 자동 삭제), reason,
+    status(pending|approved|rejected),
     requestedAt(Timestamp), approvedAt(Timestamp)
   ──────────────────────────────────────────────────────────────────
 -->
@@ -489,7 +490,7 @@ html,body { height:100%; font-family:-apple-system,'Apple SD Gothic Neo',BlinkMa
     <button class="auth-btn" id="signupBtn" onclick="doSignupRequest()">가입 신청하기</button>
   </div>
 
-  <div style="text-align:center;margin-top:20px;font-size:11px;color:var(--ink3)">v2.2.0</div>
+  <div style="text-align:center;margin-top:20px;font-size:11px;color:var(--ink3)">v2.2.1</div>
 </div>
 
 <!-- ── USER MENU ── -->
@@ -504,7 +505,7 @@ html,body { height:100%; font-family:-apple-system,'Apple SD Gothic Neo',BlinkMa
 <!-- ── NAV ── -->
 <nav class="nav" id="mainNav">
   <div class="nav-logo">Novel<em>S</em></div>
-  <div class="nav-version">v2.2.0</div>
+  <div class="nav-version">v2.2.1</div>
   <div class="nav-right">
     <button class="nav-add" id="navAddBtn" onclick="openAdd()" title="소설 추가">＋</button>
     <div class="nav-avatar" id="navAvatar" onclick="toggleUserMenu(event)">🐱</div>
@@ -948,7 +949,7 @@ const functions = firebase.app().functions(FUNCTIONS_REGION);
 // db.enablePersistence().catch(() => {}); // 멀티탭에서 에러 무시
 
 // ── 앱 상태 ──────────────────────────────────────────────────
-const APP_VERSION  = 'v2.2.0';
+const APP_VERSION  = 'v2.2.1';
 let novels         = [];       // Firestore 실시간 스냅샷
 let userDataCache  = {};       // { [novelId]: { progress, favorite, lastReadAt, ch } }
 let currentUser    = null;     // Firebase auth user
@@ -1262,7 +1263,7 @@ async function renderUserList() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-//  네이버 책 검색 — 직접 호출 (임시 방식 / v2.2.0)
+//  네이버 책 검색 — 직접 호출 (임시 방식 / v2.2.1)
 //
 //  ⚠️  API 키가 브라우저에 노출됩니다.
 //  GitHub 저장소를 반드시 Private으로 유지하세요.
@@ -2414,20 +2415,24 @@ document.getElementById('signupName').addEventListener('keydown', e => { if (e.k
   });
 
   // 가입 승인 (pending_users → Auth 계정 생성)
+  // 수정: name 필드명 통일 + 승인 후 pwHash 삭제 (프라이버시 보호)
   exports.approveUser = functions.region('asia-northeast3').https.onCall(async (data, context) => {
     await verifyAdmin(context);
     const { docId } = data;
     const doc = await admin.firestore().collection('pending_users').doc(docId).get();
     if (!doc.exists) throw new functions.https.HttpsError('not-found', '신청 정보를 찾을 수 없어요');
-    const { email, displayName, name } = doc.data();
-    const userRecord = await admin.auth().createUser({ email, displayName: name || displayName });
+    const { email, name } = doc.data(); // name 필드로 통일
+    const userRecord = await admin.auth().createUser({ email, displayName: name });
     await admin.firestore().collection('users').doc(userRecord.uid).set({
-      email, displayName: name || displayName, role: 'reader',
+      email, displayName: name, role: 'reader',
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
+    // 승인 완료 후 pwHash 삭제 (프라이버시 보호) + 상태 업데이트
     await admin.firestore().collection('pending_users').doc(docId).update({
-      status: 'approved', uid: userRecord.uid,
+      status: 'approved',
+      uid: userRecord.uid,
       approvedAt: admin.firestore.FieldValue.serverTimestamp(),
+      pwHash: admin.firestore.FieldValue.delete(), // 해시라도 불필요한 보관 제거
     });
     return { uid: userRecord.uid };
   });

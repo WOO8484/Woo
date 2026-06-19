@@ -43,13 +43,28 @@ body {
 #authScreen { position:fixed; inset:0; background:#fff; z-index:1000; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:32px 28px; }
 .auth-logo { font-size:28px; font-weight:900; letter-spacing:-.5px; margin-bottom:6px; }
 .auth-logo em { color:var(--accent); font-style:normal; }
-.auth-sub { font-size:13px; color:var(--ink3); margin-bottom:36px; }
-.auth-form { width:100%; max-width:360px; display:flex; flex-direction:column; gap:12px; }
-.auth-google { width:100%; height:52px; background:#fff; color:var(--ink); border:1.5px solid var(--line); border-radius:14px; font-size:15px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; transition:border-color var(--tr),box-shadow var(--tr); }
-.auth-google:hover { border-color:#aaa; box-shadow:var(--sh); }
-.auth-google svg { width:20px; height:20px; flex-shrink:0; }
-.auth-err { font-size:12px; color:var(--danger); text-align:center; min-height:16px; }
-/* 이메일/비밀번호 필요시 추가: .auth-tabs .auth-tab .auth-input .auth-btn .auth-forgot .auth-divider */
+.auth-sub { font-size:13px; color:var(--ink3); margin-bottom:28px; }
+.auth-form { width:100%; max-width:360px; display:flex; flex-direction:column; gap:10px; }
+.auth-tabs { display:flex; background:var(--bg2); border-radius:12px; padding:3px; margin-bottom:4px; }
+.auth-tab { flex:1; height:36px; border:none; background:none; border-radius:10px; font-size:13px; font-weight:600; color:var(--ink3); cursor:pointer; transition:all .2s; }
+.auth-tab.on { background:#fff; color:var(--accent); box-shadow:0 1px 4px rgba(0,0,0,.1); }
+.auth-input-wrap { position:relative; }
+.auth-input { width:100%; height:48px; border:1.5px solid var(--line); border-radius:12px; padding:0 14px; font-size:14px; color:var(--ink); outline:none; background:#fff; box-sizing:border-box; transition:border-color .2s; }
+.auth-input:focus { border-color:var(--accent); }
+.auth-input.error { border-color:var(--danger); }
+.auth-input-hint { font-size:11px; color:var(--danger); margin-top:3px; display:none; padding-left:4px; }
+.auth-input-hint.show { display:block; }
+.auth-pw-toggle { position:absolute; right:14px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; font-size:16px; color:var(--ink3); }
+.auth-btn { width:100%; height:50px; background:var(--accent); color:#fff; border:none; border-radius:14px; font-size:15px; font-weight:700; cursor:pointer; transition:opacity .2s; margin-top:2px; }
+.auth-btn:hover { opacity:.9; }
+.auth-btn:disabled { opacity:.5; cursor:not-allowed; }
+.auth-forgot { text-align:right; font-size:12px; color:var(--ink3); cursor:pointer; text-decoration:underline; margin-top:-4px; }
+.auth-forgot:hover { color:var(--accent); }
+.auth-divider { display:flex; align-items:center; gap:10px; color:var(--ink3); font-size:11px; margin:4px 0; }
+.auth-divider::before,.auth-divider::after { content:''; flex:1; height:1px; background:var(--line); }
+.auth-pw-strength { height:3px; border-radius:2px; margin-top:4px; transition:all .3s; }
+.auth-err { font-size:12px; color:var(--danger); text-align:center; min-height:16px; font-weight:600; }
+.auth-success { font-size:12px; color:var(--success); text-align:center; min-height:16px; font-weight:600; }
 
 /* Nav user */
 .nav-user { display:flex; align-items:center; gap:8px; }
@@ -652,7 +667,6 @@ body {
   .profile-stat-val { font-size:22px; }
   .dh-title { font-size:22px; }
   .dread { height:56px; font-size:18px; }
-  .auth-google { height:56px; font-size:16px; }
 }
 </style>
 </head>
@@ -663,15 +677,55 @@ body {
   <div class="auth-logo">Novel<em>S</em></div>
   <div class="auth-sub">소설 서재에 오신 것을 환영해요</div>
 
-  <div class="auth-form" style="margin-top:8px">
-    <div class="auth-err" id="authErr"></div>
-    <button class="auth-google" onclick="loginGoogle()">
-      <svg viewBox="0 0 48 48"><path fill="#4285F4" d="M44.5 20H24v8.5h11.8C34.7 33.9 29.9 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-21 0-1.3-.2-2.7-.5-4z"/><path fill="#34A853" d="M6.3 14.7l7 5.1C15.1 16.1 19.2 13 24 13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 16.2 2 9.4 7.3 6.3 14.7z"/><path fill="#FBBC05" d="M24 46c5.8 0 10.7-1.9 14.3-5.2l-6.6-5.4C29.8 37 27 38 24 38c-5.8 0-10.7-3.9-12.5-9.3l-7 5.4C7.9 41.3 15.4 46 24 46z"/><path fill="#EA4335" d="M44.5 20H24v8.5h11.8c-.8 2.3-2.3 4.3-4.3 5.7l6.6 5.4C42 36.1 45 30.5 45 24c0-1.3-.2-2.7-.5-4z"/></svg>
-      Google로 로그인
-    </button>
-  </div>
+  <div class="auth-form">
+    <!-- 로그인 / 회원가입 탭 -->
+    <div class="auth-tabs">
+      <button class="auth-tab on" id="authTabLogin"   onclick="switchAuthTab('login')">로그인</button>
+      <button class="auth-tab"    id="authTabSignup"  onclick="switchAuthTab('signup')">회원가입</button>
+    </div>
 
-  <!-- 이메일/비밀번호 로그인은 비활성화 중입니다. 필요시 복원 가능합니다. -->
+    <div class="auth-err"     id="authErr"></div>
+    <div class="auth-success" id="authSuccess"></div>
+
+    <!-- 이름 (회원가입만) -->
+    <div id="authNameWrap" style="display:none">
+      <input class="auth-input" id="authName" type="text" placeholder="이름" maxlength="20" oninput="clearAuthErr()">
+      <div class="auth-input-hint" id="authNameHint">이름을 입력해주세요</div>
+    </div>
+
+    <!-- 이메일 -->
+    <div>
+      <input class="auth-input" id="authEmail" type="email" placeholder="이메일" autocomplete="email" oninput="clearAuthErr()">
+      <div class="auth-input-hint" id="authEmailHint">올바른 이메일을 입력해주세요</div>
+    </div>
+
+    <!-- 비밀번호 -->
+    <div class="auth-input-wrap">
+      <input class="auth-input" id="authPw" type="password" placeholder="비밀번호 (8자 이상)" autocomplete="current-password" oninput="onPwInput()">
+      <button class="auth-pw-toggle" onclick="togglePwVisible()" tabindex="-1">👁</button>
+      <div class="auth-input-hint" id="authPwHint">비밀번호를 입력해주세요</div>
+      <!-- 비밀번호 강도 바 (회원가입만) -->
+      <div id="authPwStrengthWrap" style="display:none">
+        <div class="auth-pw-strength" id="authPwStrength" style="width:0%;background:var(--danger)"></div>
+        <div style="font-size:10px;color:var(--ink3);margin-top:2px" id="authPwStrengthLabel"></div>
+      </div>
+    </div>
+
+    <!-- 비밀번호 확인 (회원가입만) -->
+    <div id="authPwConfirmWrap" style="display:none" class="auth-input-wrap">
+      <input class="auth-input" id="authPwConfirm" type="password" placeholder="비밀번호 확인" autocomplete="new-password" oninput="clearAuthErr()">
+      <button class="auth-pw-toggle" onclick="togglePwConfirmVisible()" tabindex="-1">👁</button>
+      <div class="auth-input-hint" id="authPwConfirmHint">비밀번호가 일치하지 않아요</div>
+    </div>
+
+    <!-- 비밀번호 찾기 (로그인만) -->
+    <div id="authForgotWrap">
+      <span class="auth-forgot" onclick="sendPasswordReset()">비밀번호를 잊으셨나요?</span>
+    </div>
+
+    <!-- 메인 버튼 -->
+    <button class="auth-btn" id="authBtn" onclick="doAuth()">로그인</button>
+  </div>
 </div>
 
 <!-- ── WAITING SCREEN ── -->
@@ -692,7 +746,7 @@ body {
 
 <nav class="nav" style="display:none">
   <div class="nav-logo" id="navLogo">Novel<em>S</em></div>
-  <div style="position:absolute;left:50%;transform:translateX(-50%);font-size:11px;color:var(--ink3);background:var(--bg2);padding:2px 8px;border-radius:6px;font-weight:500">v1.3.0</div>
+  <div style="position:absolute;left:50%;transform:translateX(-50%);font-size:11px;color:var(--ink3);background:var(--bg2);padding:2px 8px;border-radius:6px;font-weight:500">v1.3.1</div>
   <div class="nav-user">
     <button class="nav-add" id="navAddBtn" onclick="openAdd()">＋ 소설 추가</button>
     <div class="nav-avatar" id="navAvatar" onclick="toggleUserMenu(event)"></div>
@@ -1252,13 +1306,11 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebas
 import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, where, getDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, uploadBytesResumable, getDownloadURL, getBlob, getBytes, deleteObject } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-storage.js";
 import {
-  getAuth, onAuthStateChanged,
-  signOut,
-  GoogleAuthProvider, signInWithPopup
-  /* 이메일/비밀번호 필요시 추가:
-  createUserWithEmailAndPassword, signInWithEmailAndPassword,
-  sendPasswordResetEmail, updateProfile
-  */
+  getAuth, onAuthStateChanged, signOut,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  sendPasswordResetEmail,
+  updateProfile
 } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
 
 // ⚠️ Firebase API 키가 클라이언트에 노출됩니다. Firebase 콘솔에서 도메인 제한 및 Security Rules를 반드시 설정하세요.
@@ -1274,7 +1326,6 @@ const app = initializeApp(firebaseConfig);
 const db      = getFirestore(app);
 const storage = getStorage(app);
 const auth    = getAuth(app);
-const googleProvider = new GoogleAuthProvider();
 let currentUser = null;
 
 // ── CONSTANTS ──
@@ -2775,27 +2826,160 @@ window.revokeUser = async function(docId, email) {
 };
 
 
-// ── AUTH UI (Google only) ──
-window.loginGoogle = async function() {
-  const errEl = document.getElementById('authErr'); errEl.textContent = '';
-  try { await signInWithPopup(auth, googleProvider); }
-  catch(e) { if (e.code !== 'auth/popup-closed-by-user') errEl.textContent = authErrorMsg(e.code); }
+// ── AUTH UI ──
+let _authMode = 'login'; // 'login' | 'signup'
+
+window.switchAuthTab = function(mode) {
+  _authMode = mode;
+  const isSignup = mode === 'signup';
+  document.getElementById('authTabLogin').classList.toggle('on', !isSignup);
+  document.getElementById('authTabSignup').classList.toggle('on', isSignup);
+  document.getElementById('authNameWrap').style.display        = isSignup ? '' : 'none';
+  document.getElementById('authPwConfirmWrap').style.display   = isSignup ? '' : 'none';
+  document.getElementById('authPwStrengthWrap').style.display  = isSignup ? '' : 'none';
+  document.getElementById('authForgotWrap').style.display      = isSignup ? 'none' : '';
+  document.getElementById('authBtn').textContent               = isSignup ? '회원가입' : '로그인';
+  document.getElementById('authPw').placeholder                = isSignup ? '비밀번호 (8자 이상)' : '비밀번호';
+  document.getElementById('authPw').autocomplete               = isSignup ? 'new-password' : 'current-password';
+  clearAuthErr();
 };
+
+window.clearAuthErr = function() {
+  document.getElementById('authErr').textContent = '';
+  document.getElementById('authSuccess').textContent = '';
+  ['authEmail','authPw','authName','authPwConfirm'].forEach(id => {
+    document.getElementById(id)?.classList.remove('error');
+  });
+  ['authEmailHint','authPwHint','authNameHint','authPwConfirmHint'].forEach(id => {
+    document.getElementById(id)?.classList.remove('show');
+  });
+};
+
+window.togglePwVisible = function() {
+  const el = document.getElementById('authPw');
+  el.type = el.type === 'password' ? 'text' : 'password';
+};
+window.togglePwConfirmVisible = function() {
+  const el = document.getElementById('authPwConfirm');
+  el.type = el.type === 'password' ? 'text' : 'password';
+};
+
+// 비밀번호 강도 체크
+window.onPwInput = function() {
+  clearAuthErr();
+  if (_authMode !== 'signup') return;
+  const pw = document.getElementById('authPw').value;
+  const strength = getPwStrength(pw);
+  const bar   = document.getElementById('authPwStrength');
+  const label = document.getElementById('authPwStrengthLabel');
+  const colors = ['#ef4444','#f97316','#eab308','#22c55e'];
+  const labels = ['매우 약함','약함','보통','강함'];
+  bar.style.width   = ((strength + 1) / 4 * 100) + '%';
+  bar.style.background = colors[strength];
+  label.textContent = pw.length ? labels[strength] : '';
+};
+
+function getPwStrength(pw) {
+  let score = 0;
+  if (pw.length >= 8)  score++;
+  if (pw.length >= 12) score++;
+  if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) score++;
+  if (/[0-9]/.test(pw)) score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+  return Math.min(3, Math.floor(score / 1.3));
+}
+
+function showAuthErr(msg) {
+  document.getElementById('authErr').textContent = msg;
+}
+function showAuthHint(id) {
+  document.getElementById(id + 'Hint')?.classList.add('show');
+  document.getElementById(id)?.classList.add('error');
+}
+
+window.doAuth = async function() {
+  clearAuthErr();
+  const btn   = document.getElementById('authBtn');
+  const email = document.getElementById('authEmail').value.trim();
+  const pw    = document.getElementById('authPw').value;
+
+  // 이메일 검증
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    showAuthHint('authEmail'); return;
+  }
+  // 비밀번호 검증
+  if (!pw || pw.length < 8) {
+    showAuthHint('authPw'); return;
+  }
+
+  if (_authMode === 'signup') {
+    const name = document.getElementById('authName').value.trim();
+    const pwConfirm = document.getElementById('authPwConfirm').value;
+    if (!name) { showAuthHint('authName'); return; }
+    if (pw !== pwConfirm) { showAuthHint('authPwConfirm'); return; }
+
+    btn.disabled = true; btn.textContent = '가입 중...';
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, email, pw);
+      await updateProfile(cred.user, { displayName: name });
+      // approvedUsers에 pending으로 등록
+      await addDoc(collection(db, 'approvedUsers'), {
+        uid: cred.user.uid,
+        email, name,
+        status: 'pending',
+        role: 'user',
+        requestedAt: new Date().toISOString(),
+      });
+    } catch(e) {
+      showAuthErr(authErrMsg(e.code));
+    } finally {
+      btn.disabled = false; btn.textContent = '회원가입';
+    }
+
+  } else {
+    btn.disabled = true; btn.textContent = '로그인 중...';
+    try {
+      await signInWithEmailAndPassword(auth, email, pw);
+    } catch(e) {
+      showAuthErr(authErrMsg(e.code));
+      btn.disabled = false; btn.textContent = '로그인';
+    }
+  }
+};
+
+window.sendPasswordReset = async function() {
+  const email = document.getElementById('authEmail').value.trim();
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    showAuthErr('이메일을 먼저 입력해주세요'); return;
+  }
+  try {
+    await sendPasswordResetEmail(auth, email);
+    document.getElementById('authSuccess').textContent = '재설정 이메일을 보냈어요. 메일함을 확인해주세요.';
+  } catch(e) {
+    showAuthErr(authErrMsg(e.code));
+  }
+};
+
+function authErrMsg(code) {
+  const map = {
+    'auth/email-already-in-use':   '이미 사용 중인 이메일이에요',
+    'auth/invalid-email':          '올바른 이메일 형식이 아니에요',
+    'auth/weak-password':          '비밀번호가 너무 약해요 (6자 이상)',
+    'auth/user-not-found':         '등록되지 않은 이메일이에요',
+    'auth/wrong-password':         '비밀번호가 틀렸어요',
+    'auth/invalid-credential':     '이메일 또는 비밀번호가 틀렸어요',
+    'auth/too-many-requests':      '로그인 시도가 너무 많아요. 잠시 후 다시 시도해주세요',
+    'auth/network-request-failed': '네트워크 연결을 확인해주세요',
+    'auth/user-disabled':          '비활성화된 계정이에요. 관리자에게 문의하세요',
+  };
+  return map[code] || '오류가 발생했어요: ' + code;
+}
+
 window.doLogout = async function() {
   closeUserMenu();
   await signOut(auth);
   showToast('로그아웃 했어요');
 };
-function authErrorMsg(code) {
-  const map = {
-    'auth/popup-blocked':        '팝업이 차단됐어요. 팝업 허용 후 다시 시도해주세요',
-    'auth/network-request-failed':'네트워크 연결을 확인해주세요',
-    'auth/too-many-requests':    '잠시 후 다시 시도해주세요',
-  };
-  return map[code] || '로그인 오류: ' + code;
-}
-
-/* 이메일/비밀번호 함수(switchAuthTab, authSubmit, sendReset)는 비활성화 중입니다. */
 
 // ── NAV USER ──
 function updateNavAvatar(user) {
@@ -2803,9 +2987,9 @@ function updateNavAvatar(user) {
   const avatar = document.getElementById('navAvatar');
   document.getElementById('menuName').textContent  = user.displayName || name;
   document.getElementById('menuEmail').textContent = user.email;
-  if (user.photoURL) avatar.innerHTML = `<img src="${user.photoURL}" alt="프로필" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
-  else avatar.textContent = name.charAt(0).toUpperCase();
-  // 초기 탭 설정
+  // 이메일/비밀번호 로그인은 photoURL 없음 → 이니셜 표시
+  avatar.innerHTML = '';
+  avatar.textContent = name.charAt(0).toUpperCase();
   switchTab('home');
   document.getElementById('navAddBtn').style.display = 'none';
 }

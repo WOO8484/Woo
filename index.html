@@ -692,7 +692,7 @@ body {
 
 <nav class="nav" style="display:none">
   <div class="nav-logo" id="navLogo">Novel<em>S</em></div>
-  <div style="position:absolute;left:50%;transform:translateX(-50%);font-size:11px;color:var(--ink3);background:var(--bg2);padding:2px 8px;border-radius:6px;font-weight:500">v1.2.6</div>
+  <div style="position:absolute;left:50%;transform:translateX(-50%);font-size:11px;color:var(--ink3);background:var(--bg2);padding:2px 8px;border-radius:6px;font-weight:500">v1.2.7</div>
   <div class="nav-user">
     <button class="nav-add" id="navAddBtn" onclick="openAdd()">＋ 소설 추가</button>
     <div class="nav-avatar" id="navAvatar" onclick="toggleUserMenu(event)"></div>
@@ -1978,22 +1978,35 @@ window.jumpToCh = function(i) {
   curCh = i; closeChList(); renderCh();
 };
 
+// 지연 렌더링 취소 핸들
+let _idleHandle = null;
+let _renderGen  = 0;
+let _progressTimer = null;
+
 function renderCh(restoreScroll = 0) {
   const n = novels.find(x=>x.id===curId);
   if(!n?._chs) return;
+
+  // 이전 지연 렌더 취소
+  if (_idleHandle) {
+    if ('cancelIdleCallback' in window) cancelIdleCallback(_idleHandle);
+    else clearTimeout(_idleHandle);
+    _idleHandle = null;
+  }
+  const gen = ++_renderGen; // 현재 렌더 세대
 
   const ch = n._chs[curCh];
   const vChTitle = document.getElementById('vChTitle');
   vChTitle.textContent = ch.title;
   vChTitle.style.display = n._chs.length === 1 ? 'none' : '';
 
-  // DocumentFragment로 DOM 조작 최소화 + 지연 렌더링
   const vText = document.getElementById('vText');
   const paras = ch.content.split(/\n{2,}/).filter(p => p.trim());
-  const FIRST_BATCH = 10;
+  const FIRST_BATCH = 12;
   const firstParas = paras.slice(0, FIRST_BATCH);
   const restParas  = paras.slice(FIRST_BATCH);
 
+  // 첫 배치 즉시 렌더
   const frag = document.createDocumentFragment();
   if (firstParas.length) {
     firstParas.forEach(p => {
@@ -2010,9 +2023,10 @@ function renderCh(restoreScroll = 0) {
   vText.innerHTML = '';
   vText.appendChild(frag);
 
-  // 나머지 문단 유휴 시간에 지연 렌더
+  // 나머지 지연 렌더 — 세대 체크로 이전 렌더 무효화
   if (restParas.length) {
     const renderRest = () => {
+      if (gen !== _renderGen) return; // 이미 다른 챕터로 넘어갔으면 무시
       const restFrag = document.createDocumentFragment();
       restParas.forEach(p => {
         const el = document.createElement('p');
@@ -2020,31 +2034,37 @@ function renderCh(restoreScroll = 0) {
         restFrag.appendChild(el);
       });
       vText.appendChild(restFrag);
+      _idleHandle = null;
     };
-    'requestIdleCallback' in window
-      ? requestIdleCallback(renderRest, { timeout: 500 })
+    _idleHandle = 'requestIdleCallback' in window
+      ? requestIdleCallback(renderRest, { timeout: 400 })
       : setTimeout(renderRest, 50);
   }
 
-  // 애니메이션 — force reflow로 클래스 확실히 리셋
+  // 애니메이션
   const vPage = document.getElementById('vPage');
   vPage.classList.remove('anim-next', 'anim-prev');
-  void vPage.offsetWidth; // reflow trigger
+  void vPage.offsetWidth;
   vPage.classList.add(_animDir === 'next' ? 'anim-next' : 'anim-prev');
 
-  // 진행률 계산 및 저장
+  // 진행률 계산
   const total = n._chs.length;
   const pct = total > 1
     ? Math.min(99, Math.round((curCh / (total - 1)) * 100))
     : (n.progress || 1);
+
+  // 진행률 DB 저장 — 빠른 연속 탭 시 디바운스
   const prevProgress = n.progress;
   n.progress = pct;
   n.lastReadAt = new Date().toISOString();
-  if (!n._shared) {
-    updateDoc(doc(db, 'users', currentUser.uid, 'novels', curId), {
-      progress: pct, lastReadAt: n.lastReadAt
-    }).catch(() => { n.progress = prevProgress; });
-  }
+  clearTimeout(_progressTimer);
+  _progressTimer = setTimeout(() => {
+    if (!n._shared) {
+      updateDoc(doc(db, 'users', currentUser.uid, 'novels', curId), {
+        progress: pct, lastReadAt: n.lastReadAt
+      }).catch(() => { n.progress = prevProgress; });
+    }
+  }, 800); // 0.8초 안에 연속 탭하면 마지막 것만 저장
 
   localStorage.setItem(`ns_pos_${curId}`, JSON.stringify({ ch: curCh, scroll: 0 }));
   setViewerUI(true);

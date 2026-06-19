@@ -686,7 +686,7 @@ body {
 
 <nav class="nav" style="display:none">
   <div class="nav-logo" id="navLogo">Novel<em>S</em></div>
-  <div style="position:absolute;left:50%;transform:translateX(-50%);font-size:11px;color:var(--ink3);background:var(--bg2);padding:2px 8px;border-radius:6px;font-weight:500">v1.2.4</div>
+  <div style="position:absolute;left:50%;transform:translateX(-50%);font-size:11px;color:var(--ink3);background:var(--bg2);padding:2px 8px;border-radius:6px;font-weight:500">v1.2.5</div>
   <div class="nav-user">
     <button class="nav-add" id="navAddBtn" onclick="openAdd()">＋ 소설 추가</button>
     <div class="nav-avatar" id="navAvatar" onclick="toggleUserMenu(event)"></div>
@@ -1382,12 +1382,15 @@ function renderHome() {
   document.getElementById('homeEmptyMsg').textContent        = isAdmin ? 'TXT 파일을 업로드해서 소설을 추가해보세요' : '아직 추가된 소설이 없어요';
   document.getElementById('homeStatsRow').style.display      = total === 0 ? 'none' : '';
   document.getElementById('homeStreakCard').style.display     = total === 0 ? 'none' : '';
-  document.getElementById('homeContinueSec').style.display   = total === 0 ? 'none' : '';
   document.getElementById('homeRecentSec').style.display     = total === 0 ? 'none' : '';
 
-  // 이어 읽기
-  const inProg = [...novels].filter(n => n.progress > 0 && n.progress < 100 && n.lastReadAt)
-    .sort((a,b) => new Date(b.lastReadAt) - new Date(a.lastReadAt)).slice(0, 5);
+  // 이어 읽기 — lastReadAt 있으면 progress 0이어도 표시
+  const inProg = [...novels]
+    .filter(n => n.lastReadAt && n.progress < 100)
+    .sort((a,b) => new Date(b.lastReadAt) - new Date(a.lastReadAt))
+    .slice(0, 5);
+  // 이어보기 섹션: 읽은 기록 있을 때만 표시
+  document.getElementById('homeContinueSec').style.display = (total === 0 || inProg.length === 0) ? 'none' : '';
   document.getElementById('homeContinue').innerHTML = inProg.length ? inProg.map(n => {
     const cc = genreCoverClass(n.genre);
     return `<div class="home-con-card" onclick="openDetail('${n.id}')">
@@ -1985,14 +1988,16 @@ function renderCh(restoreScroll = 0) {
   });
 
   // 진행률 계산 및 저장
-  const pct = n._chs.length > 1
-    ? Math.round((curCh / (n._chs.length - 1)) * 100)
+  const total = n._chs.length;
+  const pct = total > 1
+    ? Math.min(99, Math.round((curCh / (total - 1)) * 100))  // 마지막 챕터도 99%까지만 (완독은 nextCh에서)
     : (n.progress || 1);
   const prevProgress = n.progress;
   n.progress = pct;
+  n.lastReadAt = new Date().toISOString(); // 메모리도 업데이트 (홈 이어보기 반영)
   if (!n._shared) {
     updateDoc(doc(db, 'users', currentUser.uid, 'novels', curId), {
-      progress: pct, lastReadAt: new Date().toISOString()
+      progress: pct, lastReadAt: n.lastReadAt
     }).catch(() => { n.progress = prevProgress; });
   }
 
@@ -2008,13 +2013,24 @@ window.onVScroll = function() {};
 let _animDir = 'next';
 window.nextCh = function() {
   const n = novels.find(x=>x.id===curId); if(!n?._chs) return;
+
+  // 단일 챕터(구분자 없는 파일)는 완독 팝업만 — 탭으로 넘길 챕터 없음
+  if (n._chs.length === 1) {
+    if (!n._shared) updateDoc(doc(db,'users',currentUser.uid,'novels',curId),{progress:100}).catch(()=>{});
+    n.progress = 100; renderHome(); renderProfile();
+    localStorage.removeItem(`ns_pos_${curId}`);
+    document.getElementById('completeMsg').textContent = `"${n.title}"`;
+    document.getElementById('completeOv').classList.add('on');
+    return;
+  }
+
   if (curCh < n._chs.length - 1) {
     _animDir = 'next'; curCh++; renderCh();
   } else {
-    // 마지막 챕터 → 완독 팝업
+    // 마지막 챕터에서 오른쪽 탭 → 완독 팝업
     if (!n._shared) updateDoc(doc(db,'users',currentUser.uid,'novels',curId),{progress:100}).catch(()=>{});
     n.progress = 100; renderHome(); renderProfile();
-    localStorage.removeItem(`ns_pos_${curId}`); // 읽기 위치 초기화
+    localStorage.removeItem(`ns_pos_${curId}`);
     document.getElementById('completeMsg').textContent = `"${n.title}"`;
     document.getElementById('completeOv').classList.add('on');
   }

@@ -38,7 +38,8 @@
   <div class="auth-logo">🚀 <em>Mr.woo</em></div>
   <div class="auth-sub">소설 서재에 오신 것을 환영해요</div>
 
-  <div class="auth-tabs">
+  <!-- 가입 신청 탭 — 관리자가 열었을 때만 표시 -->
+  <div class="auth-tabs" id="authTabs" style="display:none">
     <button class="auth-tab on" id="tabLogin"  onclick="switchAuthTab('login')">로그인</button>
     <button class="auth-tab"    id="tabSignup" onclick="switchAuthTab('signup')">가입 신청</button>
   </div>
@@ -195,6 +196,17 @@
   </div>
   <!-- 관리자 전용 패널 -->
   <div id="adminPanel" style="display:none">
+    <!-- 가입 신청 ON/OFF -->
+    <div class="admin-section">
+      <div class="admin-section-title">🔐 가입 신청</div>
+      <div class="signup-toggle-card">
+        <div>
+          <div class="signup-toggle-label" id="signupToggleLabel">현재 닫힘</div>
+          <div class="signup-toggle-sub">열면 로그인 화면에 가입 신청 탭이 표시됩니다</div>
+        </div>
+        <button class="signup-toggle-btn" id="signupToggleBtn" onclick="toggleSignupOpen()">열기</button>
+      </div>
+    </div>
     <!-- 가입 대기 목록 -->
     <div class="admin-section" id="pendingSection" style="display:none">
       <div class="admin-section-title">⏳ 가입 대기 <span class="admin-badge" id="pendingCountBadge">0</span></div>

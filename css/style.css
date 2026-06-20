@@ -607,7 +607,7 @@ html,body {
 .edit-save-btn:disabled { opacity:.55; cursor:not-allowed; }
 
 /* ── ADD MODAL ── */
-.add-modal { position:fixed; inset:0; z-index:600; background:rgba(0,0,0,.4); display:none; align-items:flex-end; justify-content:center; }
+.add-modal { position:fixed; inset:0; z-index:700; background:rgba(0,0,0,.4); display:none; align-items:flex-end; justify-content:center; }
 .add-modal.on { display:flex; }
 .add-sheet {
   background:#fff; border-radius:20px 20px 0 0; width:100%;

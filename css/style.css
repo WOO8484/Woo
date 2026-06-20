@@ -383,9 +383,11 @@ html,body {
 /* 고정 영역: hero + stat */
 .dfixed { flex-shrink:0; background:var(--bg); }
 .dscroll {
-  flex:1 1 0; overflow-y:auto;
+  flex:1;
+  overflow-y:auto;
   -webkit-overflow-scrolling:touch;
-  min-height:0; /* 필수: flex 자식이 스크롤 되려면 */
+  min-height:0;
+  height:0; /* flex:1과 함께 써야 남은 공간 정확히 채움 */
 }
 .dbody { padding:12px 16px 24px; }
 .dstat-row { display:flex; gap:8px; margin-bottom:0; padding:10px 16px; background:var(--bg); }

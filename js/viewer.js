@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════
-   Mr.woo v2.5.0  —  js/viewer.js
+   Mr.woo v2.5.2  —  js/viewer.js
    소설 뷰어, 챕터 파싱, 읽기 설정
    ══════════════════════════════════════════════ */
 'use strict';
@@ -233,23 +233,21 @@ function openViewerPopup() {
   const nov = novels.find(x => x.id === curId); if (!nov) return;
   const total = getChs(nov)?.length || 1;
   document.getElementById('vpopupTitle').textContent = nov.title;
-  const totalPgs = getChs(nov)?.length || 1;
   const novTotalP = Math.round((nov.totalChars||0)/500);
-  const readP     = totalPgs > 1 ? Math.round(novTotalP * (curCh / (totalPgs - 1))) : novTotalP;
-  document.getElementById('vpopupInfo').textContent  = `${curCh+1} / ${total} 챕터  ·  ${readP}p / ${novTotalP}p`;
+  const readP     = total > 1 ? Math.round(novTotalP * (curCh / (total - 1))) : novTotalP;
+  document.getElementById('vpopupInfo').textContent = `${curCh+1} / ${total} 챕터  ·  ${readP}p / ${novTotalP}p`;
   const sw = document.getElementById('vpopupSliderWrap');
   const sl = document.getElementById('vpopupSlider');
   if (total > 1) {
     sw.style.display = ''; sl.max = total - 1; sl.value = curCh;
-    document.getElementById('vpopupSliderLabel').textContent = `${curCh+1} / ${total} 페이지`;
+    document.getElementById('vpopupSliderLabel').textContent = `${curCh+1} / ${total} 챕터`;
   } else sw.style.display = 'none';
   document.getElementById('vpopupOv').classList.add('on');
 }
 function closeViewerPopup() { document.getElementById('vpopupOv').classList.remove('on'); }
 function onSliderInput(v) {
-  const nov = novels.find(x => x.id === curId);
-  const _n = novels.find(x => x.id === curId);
-  if (_n) document.getElementById('vpopupSliderLabel').textContent = `${parseInt(v)+1} / ${getChs(_n)?.length||1} 페이지`;
+  const nov = novels.find(x => x.id === curId); if (!nov) return;
+  document.getElementById('vpopupSliderLabel').textContent = `${parseInt(v)+1} / ${getChs(nov)?.length||1} 챕터`;
 }
 function onSliderChange(v) { curCh = parseInt(v); closeViewerPopup(); setTimeout(renderCh, 150); }
 

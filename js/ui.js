@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════
-   Mr.woo v2.5.0  —  js/ui.js
+   Mr.woo v2.5.2  —  js/ui.js
    공통 UI 유틸리티
    ══════════════════════════════════════════════ */
 'use strict';
@@ -96,7 +96,7 @@ function closeConfirm() {
 }
 
 /* ── 읽기 설정 (localStorage) ────────────────── */
-let vSettings = { fontSize:17, lineHeight:1.9, fontFamily:'system', theme:'light', maxWidth:680 };
+let vSettings = { fontSize:17, lineHeight:1.9, fontFamily:'system', theme:'light' };
 
 (function loadSettings() {
   try {
@@ -117,15 +117,6 @@ function applyViewerSettings() {
   }
   const viewer = document.getElementById('viewer');
   if (viewer) viewer.style.background = t.bg;
-
-  // 본문 너비: vPage max-width 직접 제어 (rAF로 렌더 후 적용 보장)
-  const applyWidth = () => {
-    const vp = document.getElementById('vPage');
-    if (vp) vp.style.maxWidth = vSettings.maxWidth === 9999 ? '100%' : vSettings.maxWidth + 'px';
-  };
-  applyWidth();
-  requestAnimationFrame(applyWidth); // 렌더 직후 한 번 더 보장
-
   const vt = document.getElementById('vText');
   if (vt) {
     vt.style.fontSize   = vSettings.fontSize + 'px';
@@ -148,11 +139,6 @@ function syncSettingsUI() {
   document.getElementById('lhVal').textContent     = vSettings.lineHeight;
   document.querySelectorAll('.theme-card').forEach(c => c.classList.toggle('on', c.id === 'theme-' + vSettings.theme));
   document.querySelectorAll('.font-btn').forEach(b => b.classList.toggle('on', b.dataset.font === vSettings.fontFamily));
-  // 너비 버튼 동기화
-  document.querySelectorAll('.width-btn').forEach(b => {
-    const w = parseInt(b.getAttribute('onclick').match(/\d+/)[0]);
-    b.classList.toggle('on', w === vSettings.maxWidth);
-  });
   applyViewerSettings();
 }
 function chLh(d) {
@@ -196,13 +182,6 @@ function chLineHeight(v) {
   vSettings.lineHeight = parseFloat((v / 100).toFixed(1));
   document.getElementById('lhBadge').textContent = vSettings.lineHeight;
   document.getElementById('lhVal').textContent   = vSettings.lineHeight;
-  applyViewerSettings(); saveSettings();
-}
-function setWidth(w, el) {
-  vSettings.maxWidth = w;
-  document.querySelectorAll('.width-btn').forEach(b => b.classList.remove('on'));
-  el.classList.add('on');
-  document.getElementById('widthBadge').textContent = { 480:'좁음', 680:'기본', 860:'넓음', 9999:'전체' }[w] || '기본';
   applyViewerSettings(); saveSettings();
 }
 
@@ -304,7 +283,7 @@ function applySignupState() {
 }
 
 function resetSettings() {
-  vSettings = { fontSize:17, lineHeight:1.9, fontFamily:'system', theme:'light', maxWidth:680 };
+  vSettings = { fontSize:17, lineHeight:1.9, fontFamily:'system', theme:'light' };
   syncSettingsUI();
   localStorage.removeItem('ns_settings');
   showToast('설정 초기화했어요');

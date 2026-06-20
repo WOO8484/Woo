@@ -120,11 +120,17 @@ function applyViewerSettings() {
     vb.style.background = t.bg;
     vb.style.color      = t.ink;
   }
-  // 본문 너비: vPage에 직접 적용
-  const vp = document.getElementById('vPage');
-  if (vp) {
-    vp.style.maxWidth = vSettings.maxWidth === 9999 ? '100%' : vSettings.maxWidth + 'px';
-  }
+  const viewer = document.getElementById('viewer');
+  if (viewer) viewer.style.background = t.bg;
+
+  // 본문 너비: vPage max-width 직접 제어 (rAF로 렌더 후 적용 보장)
+  const applyWidth = () => {
+    const vp = document.getElementById('vPage');
+    if (vp) vp.style.maxWidth = vSettings.maxWidth === 9999 ? '100%' : vSettings.maxWidth + 'px';
+  };
+  applyWidth();
+  requestAnimationFrame(applyWidth); // 렌더 직후 한 번 더 보장
+
   const vt = document.getElementById('vText');
   if (vt) {
     vt.style.fontSize   = vSettings.fontSize + 'px';
@@ -137,8 +143,6 @@ function applyViewerSettings() {
     prev.style.fontSize   = vSettings.fontSize + 'px';
     prev.style.fontFamily = FONTS[vSettings.fontFamily] || FONTS.system;
   }
-  const viewer = document.getElementById('viewer');
-  if (viewer) viewer.style.background = t.bg;
 }
 function syncSettingsUI() {
   document.getElementById('fontSlider').value      = vSettings.fontSize;
@@ -216,16 +220,11 @@ function openNameEdit() {
   const name  = currentUser.displayName || currentUser.email.split('@')[0];
   input.value = name;
   document.getElementById('nameEditMsg').textContent = '';
-  const ov = document.getElementById('nameEditOv');
-  ov.style.transition    = 'opacity .2s';
-  ov.style.opacity       = '1';
-  ov.style.pointerEvents = 'all';
+  document.getElementById('nameEditOv').classList.add('on');
   setTimeout(() => input.focus(), 150);
 }
 function closeNameEdit() {
-  const ov = document.getElementById('nameEditOv');
-  ov.style.opacity       = '0';
-  ov.style.pointerEvents = 'none';
+  document.getElementById('nameEditOv').classList.remove('on');
 }
 async function saveNameEdit() {
   const name = document.getElementById('nameEditInput').value.trim();

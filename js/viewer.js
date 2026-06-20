@@ -268,8 +268,9 @@ function closeChList() {
   document.getElementById('chListModal').classList.remove('on');
 }
 function renderChList() {
-  const nov = novels.find(x => x.id === curId); if (!nov?._chs) return;
-  const total = nov._chs.length;
+  const nov = novels.find(x => x.id === curId); if (!nov) return;
+  const chs = getChs(nov); if (!chs?.length) return;
+  const total = chs.length;
   const start = chPage * CH_PAGE;
   const end   = Math.min(start + CH_PAGE, total);
   const nav = total > CH_PAGE
@@ -278,7 +279,7 @@ function renderChList() {
         <span style="font-size:12px;color:var(--ink3)">${start+1}~${end} / ${total}</span>
         <button onclick="chPageMove(1)"  style="padding:5px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg2);font-size:12px;cursor:pointer;${end>=total?'opacity:.4':''}">▶</button>
       </div>` : '';
-  document.getElementById('chList').innerHTML = nav + nov._chs.slice(start, end).map((ch, i) => {
+  document.getElementById('chList').innerHTML = nav + chs.slice(start, end).map((ch, i) => {
     const idx = start + i;
     return `<div class="ch-item${idx===curCh?' active':''}" onclick="jumpCh(${idx})">
       <span class="ch-num">${idx+1}</span>
@@ -289,8 +290,9 @@ function renderChList() {
   setTimeout(() => document.querySelector('.ch-item.active')?.scrollIntoView({ block:'center' }), 100);
 }
 function chPageMove(d) {
-  const nov = novels.find(x => x.id === curId); if (!nov?._chs) return;
-  chPage = Math.max(0, Math.min(Math.ceil(nov._chs.length / CH_PAGE) - 1, chPage + d));
+  const nov = novels.find(x => x.id === curId); if (!nov) return;
+  const chs = getChs(nov); if (!chs?.length) return;
+  chPage = Math.max(0, Math.min(Math.ceil(chs.length / CH_PAGE) - 1, chPage + d));
   renderChList();
 }
 function jumpCh(i) { curCh = i; closeChList(); renderCh(); }

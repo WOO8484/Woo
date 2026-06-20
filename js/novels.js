@@ -376,7 +376,8 @@ function applySelectedFile(file) {
   if (!titleEl.value) titleEl.value = file.name.replace(/\.(txt|text)$/i,'').trim();
 }
 
-/* 이미지 압축 (Firestore 1MB 제한 대응) / 최대 300x450px, JPEG quality 0.7로 리사이즈 */
+/* 이미지 압축 — 최대 300x450px, JPEG quality 0.7
+   비율 유지 리사이즈 + 극단적 비율(가로형 등) 방어 처리 */
 function compressImage(file, maxWidth=300, maxHeight=450, quality=0.7) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -385,12 +386,27 @@ function compressImage(file, maxWidth=300, maxHeight=450, quality=0.7) {
       const img = new Image();
       img.onerror = () => reject(new Error('이미지 변환에 실패했어요'));
       img.onload = () => {
-        // 비율 유지하며 리사이즈
         let w = img.width, h = img.height;
+        // 비율 유지하며 maxWidth/maxHeight 안에 맞춤
         if (w > maxWidth || h > maxHeight) {
           const ratio = Math.min(maxWidth / w, maxHeight / h);
           w = Math.round(w * ratio);
           h = Math.round(h * ratio);
+        }
+        // 극단적 가로형(책 표지가 아닌 이미지) 방어: 최소 높이 보장
+        if (h < w * 0.8) {
+          // 가로형이면 정사각형 기준으로 center-crop
+          const size = Math.min(w, h);
+          const canvas = document.createElement('canvas');
+          canvas.width = size; canvas.height = size;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img,
+            (img.width  - img.height) / 2, 0,
+            img.height, img.height,
+            0, 0, size, size
+          );
+          resolve(canvas.toDataURL('image/jpeg', quality));
+          return;
         }
         const canvas = document.createElement('canvas');
         canvas.width = w; canvas.height = h;

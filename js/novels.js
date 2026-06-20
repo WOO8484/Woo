@@ -302,8 +302,9 @@ function openDetail(id) {
   document.getElementById('dStatProg').textContent  = readPages + 'p';
   document.getElementById('dStatPages').textContent = totalPages + 'p';
   document.getElementById('dSyn').textContent  = n.synopsis || '줄거리 없음';
-  document.getElementById('dTags').innerHTML   = (n.tags && n.tags.length)
-    ? n.tags.map(t => `<span class="dtag">#${escapeHtml(t)}</span>`).join('') : '태그 없음';
+  // 태그 → 상단 dbar에 렌더
+  document.getElementById('dBarTags').innerHTML = (n.tags && n.tags.length)
+    ? n.tags.map(t => `<span class="dbar-tag">#${escapeHtml(t)}</span>`).join('') : '';
   document.getElementById('dDlBtn').style.display       = (n.inlineText || n.textUrl) ? '' : 'none';
   document.getElementById('dDelBtn').style.display      = isAdmin ? '' : 'none';
   document.getElementById('dEditBtn').style.display     = isAdmin ? '' : 'none';

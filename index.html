@@ -252,7 +252,17 @@
 <div id="detail" style="display:none;">
   <div class="dbar">
     <button class="dbar-back" onclick="closeDetail()">←</button>
-    <button id="dEditBtn" onclick="openEdit()" class="dbar-edit-btn" style="display:none">✏️ 수정</button>
+    <div class="dbar-right">
+      <!-- 태그 -->
+      <div class="dbar-tags" id="dBarTags"></div>
+      <!-- 액션 버튼들 -->
+      <div class="dbar-actions">
+        <button class="dbar-dl-btn"  id="dDlBtn"      style="display:none" onclick="downloadNovel()">↓ TXT</button>
+        <button class="dbar-del-btn" id="dDelBtn"      style="display:none" onclick="deleteNovel()">🗑 삭제</button>
+        <button class="dbar-rem-btn" id="dShelfRemBtn" style="display:none" onclick="removeFromShelf()">☆ 제거</button>
+        <button id="dEditBtn" onclick="openEdit()" class="dbar-edit-btn" style="display:none">✏️ 수정</button>
+      </div>
+    </div>
   </div>
   <div class="dscroll">
     <div class="dhero" id="dHero">
@@ -275,15 +285,6 @@
         <div class="dstat"><div class="dstat-val" id="dStatPages">0p</div><div class="dstat-lbl">전체 분량</div></div>
       </div>
       <div class="dsyn-card" id="dSyn">줄거리 없음</div>
-      <div class="dtag-card">
-        <div class="dtag-title">태그</div>
-        <div id="dTags">태그 없음</div>
-      </div>
-      <div class="dbtns">
-        <button class="ddl-btn"  id="dDlBtn"      style="display:none" onclick="downloadNovel()">↓ TXT 다운로드</button>
-        <button class="ddel-btn" id="dDelBtn"      style="display:none" onclick="deleteNovel()">🗑 전체 삭제 (관리자)</button>
-        <button class="ddel-btn" id="dShelfRemBtn" style="display:none" onclick="removeFromShelf()">☆ 내 서재에서 제거</button>
-      </div>
     </div>
   </div>
   <div class="dfoot">

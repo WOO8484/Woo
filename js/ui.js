@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════
-   NovelShelf v2.3.7  —  js/ui.js
+   Mr.woo v2.3.9  —  js/ui.js
    공통 UI 유틸리티
    ══════════════════════════════════════════════ */
 'use strict';
@@ -59,13 +59,6 @@ function batchRender() {
 }
 
 /* ── 앱 화면 전환 ─────────────────────────────── */
-function showLoadingScreen() {
-  document.getElementById('loadingScreen').style.display = 'flex';
-  document.getElementById('authScreen').style.display    = 'none';
-  document.getElementById('mainNav').style.display       = 'none';
-  document.getElementById('tabBar').style.display        = 'none';
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-}
 function showAuthScreen() {
   document.getElementById('loadingScreen').style.display = 'none';
   document.getElementById('authScreen').style.display    = 'flex';
@@ -203,13 +196,16 @@ function openNameEdit() {
   const name  = currentUser.displayName || currentUser.email.split('@')[0];
   input.value = name;
   document.getElementById('nameEditMsg').textContent = '';
-  document.getElementById('nameEditOv').style.opacity       = '1';
-  document.getElementById('nameEditOv').style.pointerEvents = 'all';
-  setTimeout(() => input.focus(), 100);
+  const ov = document.getElementById('nameEditOv');
+  ov.style.transition    = 'opacity .2s';
+  ov.style.opacity       = '1';
+  ov.style.pointerEvents = 'all';
+  setTimeout(() => input.focus(), 150);
 }
 function closeNameEdit() {
-  document.getElementById('nameEditOv').style.opacity       = '0';
-  document.getElementById('nameEditOv').style.pointerEvents = 'none';
+  const ov = document.getElementById('nameEditOv');
+  ov.style.opacity       = '0';
+  ov.style.pointerEvents = 'none';
 }
 async function saveNameEdit() {
   const name = document.getElementById('nameEditInput').value.trim();

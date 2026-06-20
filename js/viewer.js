@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════
-   NovelShelf v2.3.7  —  js/viewer.js
+   Mr.woo v2.3.9  —  js/viewer.js
    소설 뷰어, 챕터 파싱, 읽기 설정
    ══════════════════════════════════════════════ */
 'use strict';
@@ -75,9 +75,9 @@ function openViewer(id) {
   const nov = novels.find(x => x.id === id); if (!nov) return;
   if (!nov.inlineText) { showToast('읽기 가능한 파일이 없어요'); return; }
   curId   = id;
-  nov._chs = getChs(nov);
-  const saved = getNovelUserData(id);
-  curCh = Math.min(saved.ch || 0, nov._chs.length - 1);
+  const novChs = getChs(nov);
+  const saved  = getNovelUserData(id);
+  curCh = Math.min(saved.ch || 0, novChs.length - 1);
   chPage = Math.floor(curCh / CH_PAGE);
 
   document.getElementById('viewer').style.display  = 'flex';
@@ -198,8 +198,9 @@ function renderCh() {
    ═══════════════════════════════════════════════ */
 function nextCh() {
   const nov = novels.find(x => x.id === curId);
-  if (!nov?._chs || nov._chs.length === 1) return;
-  if (curCh < nov._chs.length - 1) {
+  const _novChs = getChs(nov);
+  if (!_novChs || _novChs.length === 1) return;
+  if (curCh < _novChs.length - 1) {
     _animDir = 'next'; curCh++; renderCh();
   } else {
     setNovelUserData(curId, { progress:100, lastReadAt:new Date().toISOString(), ch:0 });
@@ -221,7 +222,7 @@ function closeComplete(exit) {
    ═══════════════════════════════════════════════ */
 function openViewerPopup() {
   const nov = novels.find(x => x.id === curId); if (!nov) return;
-  const total = nov._chs ? nov._chs.length : 1;
+  const total = getChs(nov)?.length || 1;
   document.getElementById('vpopupTitle').textContent = nov.title;
   document.getElementById('vpopupInfo').textContent  = `${curCh+1} / ${total} 페이지  ·  ${getNovelUserData(curId).progress||0}% 진행`;
   const sw = document.getElementById('vpopupSliderWrap');
@@ -235,7 +236,8 @@ function openViewerPopup() {
 function closeViewerPopup() { document.getElementById('vpopupOv').classList.remove('on'); }
 function onSliderInput(v) {
   const nov = novels.find(x => x.id === curId);
-  if (nov?._chs) document.getElementById('vpopupSliderLabel').textContent = `${parseInt(v)+1} / ${nov._chs.length} 페이지`;
+  const _n = novels.find(x => x.id === curId);
+  if (_n) document.getElementById('vpopupSliderLabel').textContent = `${parseInt(v)+1} / ${getChs(_n)?.length||1} 페이지`;
 }
 function onSliderChange(v) { curCh = parseInt(v); closeViewerPopup(); setTimeout(renderCh, 150); }
 
@@ -243,7 +245,8 @@ function onSliderChange(v) { curCh = parseInt(v); closeViewerPopup(); setTimeout
    챕터 목록
    ═══════════════════════════════════════════════ */
 function openChList() {
-  const nov = novels.find(x => x.id === curId); if (!nov?._chs) return;
+  const nov = novels.find(x => x.id === curId); if (!nov) return;
+  if (!getChs(nov)?.length) return;
   chPage = Math.floor(curCh / CH_PAGE);
   document.getElementById('chListTitle').textContent = nov.title;
   renderChList();

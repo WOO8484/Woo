@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════
-   NovelShelf v2.3.7  —  js/admin.js
+   Mr.woo v2.3.9  —  js/admin.js
    관리자 — 사용자 관리, 가입 승인/거절
    ══════════════════════════════════════════════ */
 'use strict';
@@ -10,9 +10,9 @@
 async function renderPendingList() {
   if (!isAdmin) return;
   try {
+    // orderBy 제거 → Firestore 복합 인덱스 불필요 (클라이언트 정렬)
     const snap = await db.collection('pending_users')
       .where('status', '==', 'pending')
-      .orderBy('requestedAt', 'asc')
       .get();
 
     const section = document.getElementById('pendingSection');
@@ -24,7 +24,12 @@ async function renderPendingList() {
     section.style.display = '';
     badge.textContent     = snap.size;
 
-    list.innerHTML = snap.docs.map(d => {
+    const sortedDocs = [...snap.docs].sort((a,b) => {
+      const at = a.data().requestedAt?.toMillis?.() || 0;
+      const bt = b.data().requestedAt?.toMillis?.() || 0;
+      return at - bt;
+    });
+    list.innerHTML = sortedDocs.map(d => {
       const u    = d.data();
       const date = u.requestedAt?.toDate
         ? u.requestedAt.toDate().toLocaleDateString('ko-KR') : '';

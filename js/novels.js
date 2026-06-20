@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════
-   NovelShelf v2.3.7  —  js/novels.js
+   Mr.woo v2.3.9  —  js/novels.js
    소설 CRUD, 유저 데이터, 홈/서재 렌더링
    ══════════════════════════════════════════════ */
 'use strict';
@@ -68,7 +68,15 @@ async function setNovelUserData(id, patch) {
 }
 
 function getNovelsWithUserData() {
-  return novels.map(n => ({ ...n, ...getNovelUserData(n.id) }));
+  return novels.map(n => {
+    const ud = getNovelUserData(n.id);
+    return {
+      ...n, ...ud,
+      // 정렬 성능: Date 파싱을 한 번만 (밀리초로 캐싱)
+      _addedMs:   n.addedAt    ? new Date(n.addedAt).getTime()    : 0,
+      _lastReadMs: ud.lastReadAt ? new Date(ud.lastReadAt).getTime() : 0,
+    };
+  });
 }
 
 /* ═══════════════════════════════════════════════
@@ -95,7 +103,7 @@ function renderHome() {
   // 이어 읽기
   const inProg = [...nlist]
     .filter(n => n.lastReadAt && n.progress < 100)
-    .sort((a,b) => new Date(b.lastReadAt) - new Date(a.lastReadAt))
+    .sort((a,b) => (b._lastReadMs||0) - (a._lastReadMs||0))
     .slice(0, 5);
   document.getElementById('secContinue').style.display = inProg.length ? '' : 'none';
   document.getElementById('continueList').innerHTML = inProg.map(n => {
@@ -117,7 +125,7 @@ function renderHome() {
   }).join('');
 
   // 최근 추가
-  const recent = [...nlist].sort((a,b) => new Date(b.addedAt) - new Date(a.addedAt)).slice(0, 6);
+  const recent = [...nlist].sort((a,b) => (b._addedMs||0) - (a._addedMs||0)).slice(0, 6);
   document.getElementById('secRecent').style.display = '';
   document.getElementById('recentGrid').innerHTML = recent.map(n => {
     const cc   = genreCoverClass(n.genre);
@@ -194,7 +202,7 @@ function renderShelf() {
   if (sortMode === 'title')    list.sort((a,b) => a.title.localeCompare(b.title));
   if (sortMode === 'progress') list.sort((a,b) => b.progress - a.progress);
   if (sortMode === 'done')     list.sort((a,b) => (b.progress>=100?1:0) - (a.progress>=100?1:0));
-  if (sortMode === 'recent')   list.sort((a,b) => new Date(b.addedAt) - new Date(a.addedAt));
+  if (sortMode === 'recent')   list.sort((a,b) => (b._addedMs||0) - (a._addedMs||0));
 
   const grid = document.getElementById('shelfGrid');
   grid.className = shelfView === 'grid' ? 'shelf-grid' : 'shelf-grid list';
@@ -617,10 +625,21 @@ async function removeFromShelf() {
 }
 function confirmShelfRemove(id) {
   const n = novels.find(x => x.id === id); if (!n) return;
-  curId = id;
+  // curId를 전역 변수로 덮어쓰지 않고 클로저로 전달
   showConfirm(
-    `"${n.title}"을(를) 내 서재에서 제거할까요? (읽기 기록도 초기화돼요)`,
-    () => removeFromShelf()
+    `"${escapeHtml(n.title)}"을(를) 내 서재에서 제거할까요? (읽기 기록도 초기화돼요)`,
+    async () => {
+      try {
+        await setNovelUserData(id, { progress:0, favorite:false, lastReadAt:null, ch:0 });
+        delete userDataCache[id];
+        closeDetail();
+        batchRender();
+        showToast('내 서재에서 제거했어요');
+      } catch(e) {
+        console.error('confirmShelfRemove error:', e);
+        showToast('제거에 실패했어요', 'error');
+      }
+    }
   );
 }
 
@@ -641,7 +660,7 @@ function downloadNovel() {
 
 /* ═══════════════════════════════════════════════
    네이버 책 검색
-   ⚠️ 임시 방식 (v2.3.7) — API 키 클라이언트 노출
+   ⚠️ 임시 방식 (v2.3.9) — API 키 클라이언트 노출
    PC 생기면 Cloud Functions 이전 예정
    ▶ 아래 두 줄에 본인 네이버 API 키를 입력하세요
    ═══════════════════════════════════════════════ */
@@ -651,12 +670,20 @@ const NAVER_CLIENT_SECRET = "여기에_Client_Secret_입력";
 async function callNaverBookAPI(q) {
   const apiUrl = `https://openapi.naver.com/v1/search/book.json?query=${encodeURIComponent(q)}&display=10&start=1`;
   const proxy  = `https://api.allorigins.win/get?url=${encodeURIComponent(apiUrl)}`;
-  const res    = await fetch(proxy, {
-    headers: {
-      'X-Naver-Client-Id':     NAVER_CLIENT_ID,
-      'X-Naver-Client-Secret': NAVER_CLIENT_SECRET,
-    },
-  });
+  const ctrl   = new AbortController();
+  const timer  = setTimeout(() => ctrl.abort(), 8000); // 8초 timeout
+  let res;
+  try {
+    res = await fetch(proxy, {
+      signal: ctrl.signal,
+      headers: {
+        'X-Naver-Client-Id':     NAVER_CLIENT_ID,
+        'X-Naver-Client-Secret': NAVER_CLIENT_SECRET,
+      },
+    });
+  } finally {
+    clearTimeout(timer);
+  }
   if (!res.ok) throw new Error('네트워크 오류');
   const data   = await res.json();
   const parsed = JSON.parse(data.contents);
@@ -720,9 +747,9 @@ function selectNaverBook(idx, item) {
   document.getElementById('authorFilledBadge').style.display = item.author      ? '' : 'none';
   document.getElementById('synFilledBadge').style.display    = item.description ? '' : 'none';
   if (item.coverUrl) {
-    addCoverBase64 = item.coverUrl;
+    addCoverBase64 = escapeHtml(item.coverUrl);
     const img = document.getElementById('coverPreviewImg');
-    img.src = item.coverUrl; img.style.display = '';
+    img.src = escapeHtml(item.coverUrl); img.style.display = '';
     document.getElementById('coverPreviewEmpty').style.display = 'none';
     document.getElementById('coverClearBtn').style.display     = '';
     document.getElementById('coverAutoBadge').style.display    = '';
@@ -736,16 +763,16 @@ function selectNaverBook(idx, item) {
 async function renderProfile() {
   if (!currentUser) return;
   try {
-  const name = currentUser.displayName || currentUser.email.split('@')[0];
-  document.getElementById('profileAvatar').textContent = getAvatar(name);
-  document.getElementById('profileName').textContent   = name;
-  document.getElementById('profileEmail').textContent  = currentUser.email;
-  document.getElementById('profileRole').textContent   = isAdmin ? '관리자' : '독자';
-  const plist   = getNovelsWithUserData();
-  document.getElementById('pStatTotal').textContent   = plist.length;
-  document.getElementById('pStatReading').textContent = plist.filter(n => n.progress > 0 && n.progress < 100).length;
-  document.getElementById('pStatDone').textContent    = plist.filter(n => n.progress >= 100).length;
-  document.getElementById('adminPanel').style.display = isAdmin ? 'block' : 'none';
+    const name = currentUser.displayName || currentUser.email.split('@')[0];
+    document.getElementById('profileAvatar').textContent = getAvatar(name);
+    document.getElementById('profileName').textContent   = name;
+    document.getElementById('profileEmail').textContent  = currentUser.email;
+    document.getElementById('profileRole').textContent   = isAdmin ? '관리자' : '독자';
+    const plist = getNovelsWithUserData();
+    document.getElementById('pStatTotal').textContent   = plist.length;
+    document.getElementById('pStatReading').textContent = plist.filter(n => n.progress > 0 && n.progress < 100).length;
+    document.getElementById('pStatDone').textContent    = plist.filter(n => n.progress >= 100).length;
+    document.getElementById('adminPanel').style.display = isAdmin ? 'block' : 'none';
     if (isAdmin) {
       await renderPendingList();
       await renderUserList();

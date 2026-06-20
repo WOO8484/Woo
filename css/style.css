@@ -316,15 +316,17 @@ html,body {
 
 /* ── DETAIL ── */
 #detail {
-  display:none;
+  visibility:hidden;
+  pointer-events:none;
   position:fixed; inset:0; z-index:150;
+  display:flex;
   flex-direction:column;
   overflow:hidden;
   background:var(--bg);
-  height:100%;
 }
 #detail.open {
-  display:flex;
+  visibility:visible;
+  pointer-events:auto;
 }
 .dbar {
   display:flex; align-items:flex-start; justify-content:space-between;

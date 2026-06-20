@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════
-   Mr.woo v2.3.9  —  js/novels.js
+   Mr.woo v2.4.3  —  js/novels.js
    소설 CRUD, 유저 데이터, 홈/서재 렌더링
    ══════════════════════════════════════════════ */
 'use strict';
@@ -660,25 +660,46 @@ function downloadNovel() {
 
 /* ═══════════════════════════════════════════════
    네이버 책 검색
-   ⚠️ 임시 방식 (v2.3.9) — API 키 클라이언트 노출
-   PC 생기면 Cloud Functions 이전 예정
-   ▶ 아래 두 줄에 본인 네이버 API 키를 입력하세요
+   ✅ Firebase Remote Config로 API 키 관리
+   GitHub에 키 노출 없음 / Cloud Functions 불필요
    ═══════════════════════════════════════════════ */
-const NAVER_CLIENT_ID     = "여기에_Client_ID_입력";
-const NAVER_CLIENT_SECRET = "여기에_Client_Secret_입력";
+
+// Remote Config 초기화
+const _remoteConfig = firebase.remoteConfig();
+_remoteConfig.settings.minimumFetchIntervalMillis = 0; // 매번 최신값 fetch (캐시 없음)
+_remoteConfig.defaultConfig = {
+  NAVER_CLIENT_ID:     '',
+  NAVER_CLIENT_SECRET: '',
+};
+
+// Remote Config에서 네이버 API 키 가져오기
+async function getNaverKeys() {
+  try {
+    await _remoteConfig.fetchAndActivate();
+    return {
+      clientId:     _remoteConfig.getValue('NAVER_CLIENT_ID').asString(),
+      clientSecret: _remoteConfig.getValue('NAVER_CLIENT_SECRET').asString(),
+    };
+  } catch(e) {
+    console.error('Remote Config 오류:', e);
+    return { clientId: '', clientSecret: '' };
+  }
+}
 
 async function callNaverBookAPI(q) {
+  const { clientId, clientSecret } = await getNaverKeys();
+  if (!clientId || !clientSecret) throw new Error('API 키가 설정되지 않았어요');
   const apiUrl = `https://openapi.naver.com/v1/search/book.json?query=${encodeURIComponent(q)}&display=10&start=1`;
   const proxy  = `https://api.allorigins.win/get?url=${encodeURIComponent(apiUrl)}`;
   const ctrl   = new AbortController();
-  const timer  = setTimeout(() => ctrl.abort(), 8000); // 8초 timeout
+  const timer  = setTimeout(() => ctrl.abort(), 8000);
   let res;
   try {
     res = await fetch(proxy, {
       signal: ctrl.signal,
       headers: {
-        'X-Naver-Client-Id':     NAVER_CLIENT_ID,
-        'X-Naver-Client-Secret': NAVER_CLIENT_SECRET,
+        'X-Naver-Client-Id':     clientId,
+        'X-Naver-Client-Secret': clientSecret,
       },
     });
   } finally {
@@ -707,7 +728,13 @@ async function searchNaverBook() {
     const items = await callNaverBookAPI(q);
     renderNaverResults(items);
   } catch(e) {
-    document.getElementById('naverResults').innerHTML = '<div class="naver-status err">검색 실패. 잠시 후 다시 시도해주세요.</div>';
+    console.error('searchNaverBook error:', e);
+    const errMsg = e.message === 'API 키가 설정되지 않았어요'
+      ? 'API 키가 설정되지 않았어요. Remote Config를 확인해주세요.'
+      : e.message === 'The user aborted a request.'
+        ? '검색 시간이 초과됐어요. 다시 시도해주세요.'
+        : '검색 실패. 잠시 후 다시 시도해주세요.';
+    document.getElementById('naverResults').innerHTML = `<div class="naver-status err">${errMsg}</div>`;
     showToast('검색 중 오류가 발생했어요', 'error');
   } finally {
     btn.disabled = false; btn.textContent = '검색';

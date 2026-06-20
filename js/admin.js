@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════
-   Mr.woo v2.3.9  —  js/admin.js
+   Mr.woo v2.4.0  —  js/admin.js
    관리자 — 사용자 관리, 가입 승인/거절
    ══════════════════════════════════════════════ */
 'use strict';
@@ -19,10 +19,13 @@ async function renderPendingList() {
     const list    = document.getElementById('pendingList');
     const badge   = document.getElementById('pendingCountBadge');
 
-    if (snap.empty) { section.style.display = 'none'; return; }
-
     section.style.display = '';
-    badge.textContent     = snap.size;
+    if (snap.empty) {
+      badge.textContent = '0';
+      list.innerHTML = '<div style="padding:16px;text-align:center;font-size:13px;color:var(--ink3)">대기 중인 가입 신청이 없어요</div>';
+      return;
+    }
+    badge.textContent = snap.size;
 
     const sortedDocs = [...snap.docs].sort((a,b) => {
       const at = a.data().requestedAt?.toMillis?.() || 0;
@@ -121,7 +124,7 @@ async function renderUserList() {
       <div class="user-item">
         <div class="user-avatar">${getAvatar(u.displayName || u.email || '')}</div>
         <div class="user-info">
-          <div class="user-name">${escapeHtml(u.displayName || '이름 없음')}
+          <div class="user-name">${escapeHtml(u.displayName || u.email?.split('@')[0] || '이름 없음')}
             <span class="user-role-badge ${u.role==='admin'?'user-role-admin':'user-role-reader'}">
               ${u.role==='admin'?'관리자':'독자'}
             </span>

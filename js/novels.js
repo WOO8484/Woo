@@ -1,4 +1,4 @@
-/* Mr.woo v2.4.7  —  js/novels.js / 소설 CRUD, 유저 데이터, 홈/서재 렌더링 */
+/* Mr.woo v2.4.9  —  js/novels.js / 소설 CRUD, 유저 데이터, 홈/서재 렌더링 */
 'use strict';
 
 /* Firestore — 소설 목록 실시간 구독 */
@@ -351,8 +351,6 @@ function selGenre(el) {
 }
 
 // 파일 처리
-const MAX_CHARS = 500_000; // 50만 글자 (Firestore 1MB + iOS 메모리 보호)
-
 function onFileDrop(e) { applySelectedFile(e.dataTransfer.files[0]); }
 function onFileSelect(input) { applySelectedFile(input.files[0]); }
 function applySelectedFile(file) {
@@ -446,12 +444,7 @@ async function saveNovel() {
       inlineText = await readTextFileAsync(curFile, pct => { btn.textContent = `읽는 중... ${pct}%`; });
       totalChars = inlineText.length;
 
-      // ── 글자수 제한 (Firestore 1MB + iOS 메모리 보호) ──
-      if (totalChars > MAX_CHARS) {
-        showToast(`파일이 너무 커요 (최대 ${(MAX_CHARS/10000).toFixed(0)}만 글자, 현재 ${(totalChars/10000).toFixed(0)}만 글자)`, 'error');
-        btn.disabled = false; btn.textContent = '서재에 추가';
-        return;
-      }
+      // ── Storage 이전으로 글자수 제한 없음 ──
     }
     btn.textContent = '저장 중...';
     const novelRef  = db.collection('novels').doc();

@@ -203,12 +203,13 @@ function openNameEdit() {
   const name  = currentUser.displayName || currentUser.email.split('@')[0];
   input.value = name;
   document.getElementById('nameEditMsg').textContent = '';
-  const ov = document.getElementById('nameEditOv');
-  ov.classList.add('on');
+  document.getElementById('nameEditOv').style.opacity       = '1';
+  document.getElementById('nameEditOv').style.pointerEvents = 'all';
   setTimeout(() => input.focus(), 100);
 }
 function closeNameEdit() {
-  document.getElementById('nameEditOv').classList.remove('on');
+  document.getElementById('nameEditOv').style.opacity       = '0';
+  document.getElementById('nameEditOv').style.pointerEvents = 'none';
 }
 async function saveNameEdit() {
   const name = document.getElementById('nameEditInput').value.trim();

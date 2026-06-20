@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════
-   Mr.woo v2.4.7  —  js/ui.js
+   Mr.woo v2.5.0  —  js/ui.js
    공통 UI 유틸리티
    ══════════════════════════════════════════════ */
 'use strict';
@@ -16,12 +16,6 @@ function escapeHtml(s) {
 }
 function stripHtmlTags(str) {
   return str.replace(/<[^>]*>/g,'').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&').replace(/&quot;/g,'"');
-}
-
-/* ── 비밀번호 SHA-256 해시 ────────────────────── */
-async function hashPassword(pw) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
 }
 
 /* ── TOAST ────────────────────────────────────── */

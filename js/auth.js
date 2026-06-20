@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════
-   Mr.woo v2.4.7  —  js/auth.js
+   Mr.woo v2.5.0  —  js/auth.js
    Firebase Auth, 로그인, 가입 신청
    ══════════════════════════════════════════════ */
 'use strict';
@@ -137,7 +137,6 @@ async function doSignupRequest() {
     msg.className   = 'auth-msg ok';
     document.getElementById('signupName').value   = '';
     document.getElementById('signupEmail').value  = '';
-    document.getElementById('signupPw').value     = '';
     document.getElementById('signupReason').value = '';
   } catch(e) {
     console.error('signup error:', e);

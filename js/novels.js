@@ -1,4 +1,4 @@
-/* Mr.woo v2.4.9  —  js/novels.js / 소설 CRUD, 유저 데이터, 홈/서재 렌더링 */
+/* Mr.woo v2.5.0  —  js/novels.js / 소설 CRUD, 유저 데이터, 홈/서재 렌더링 */
 'use strict';
 
 /* Firestore — 소설 목록 실시간 구독 */
@@ -44,16 +44,15 @@ function getNovelUserData(id) {
   return userDataCache[id] || { progress:0, favorite:false, lastReadAt:null, ch:0 };
 }
 
-// Storage에서 소설 본문 로드
+// Storage에서 소설 본문 로드 (메모리 캐시 포함)
 async function loadNovelText(nov) {
   if (nov._textLoaded) return;
-  if (nov.inlineText)  { nov._textLoaded = true; return; } // 구버전 호환
-  if (!nov.textUrl)    return;
+  if (!nov.textUrl) return;
   try {
     const res      = await fetch(nov.textUrl);
     nov.inlineText = await res.text();
     nov._textLoaded = true;
-    _chsCache.delete(nov.id); // 캐시 초기화
+    _chsCache.delete(nov.id);
   } catch(e) {
     showToast('본문을 불러오지 못했어요', 'error');
     console.error('loadNovelText error:', e);
@@ -305,7 +304,7 @@ function openDetail(id) {
   document.getElementById('dSyn').textContent  = n.synopsis || '줄거리 없음';
   document.getElementById('dBarTags').innerHTML = (n.tags && n.tags.length)
     ? n.tags.map(t => `<span class="dbar-tag">#${escapeHtml(t)}</span>`).join('') : '';
-  document.getElementById('dDlBtn').style.display       = (n.inlineText || n.textUrl) ? '' : 'none';
+  document.getElementById('dDlBtn').style.display       = n.textUrl ? '' : 'none';
   document.getElementById('dDelBtn').style.display      = isAdmin ? '' : 'none';
   document.getElementById('dEditBtn').style.display     = isAdmin ? '' : 'none';
   document.getElementById('dShelfRemBtn').style.display = (n.progress > 0 || n.favorite) ? '' : 'none';
@@ -674,17 +673,10 @@ async function downloadNovel() {
   const n = novels.find(x => x.id === curId);
   if (!n) return;
   try {
-    let text = '';
-    if (n.textUrl) {
-      // Storage에서 fetch
-      const res = await fetch(n.textUrl);
-      text = await res.text();
-    } else if (n.inlineText) {
-      // 구버전 호환 (Firestore inline)
-      text = n.inlineText;
-    } else {
-      showToast('다운로드할 텍스트가 없어요', 'error'); return;
-    }
+    if (!n.textUrl) { showToast('다운로드할 텍스트가 없어요', 'error'); return; }
+    showToast('다운로드 준비 중...', '', 5000);
+    const res  = await fetch(n.textUrl);
+    const text = await res.text();
     const blob = new Blob([text], { type:'text/plain;charset=utf-8' });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');

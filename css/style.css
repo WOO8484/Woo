@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════
-   NovelShelf v2.3.0  —  style.css
+   Mr.woo v2.4.1  —  style.css
    ══════════════════════════════════════════════ */
 
 /* ── DESIGN TOKENS ── */
@@ -90,10 +90,12 @@ html,body {
 
 /* ── NAV ── */
 .nav {
-  display:none; position:fixed; top:0; left:0; right:0; height:54px;
+  display:none; position:fixed; top:0; left:0; right:0;
+  height:calc(54px + env(safe-area-inset-top));
   background:rgba(255,255,255,.97); backdrop-filter:blur(12px);
   border-bottom:1px solid var(--line); z-index:100;
-  padding:0 16px; align-items:center; justify-content:space-between;
+  padding:env(safe-area-inset-top) 16px 0;
+  align-items:center; justify-content:space-between;
 }
 .nav-logo { font-size:18px; font-weight:900; letter-spacing:-.5px; }
 .nav-logo em { color:var(--accent); font-style:normal; }
@@ -155,7 +157,7 @@ html,body {
 /* ── PAGES ── */
 .page {
   display:none;
-  padding:70px 16px max(80px, calc(60px + env(safe-area-inset-bottom)));
+  padding:calc(70px + env(safe-area-inset-top)) 16px max(80px, calc(60px + env(safe-area-inset-bottom)));
   min-height:100vh;
 }
 .page.active { display:block; }

@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════
-   NovelShelf v2.3.2  —  js/novels.js
+   NovelShelf v2.3.3  —  js/novels.js
    소설 CRUD, 유저 데이터, 홈/서재 렌더링
    ══════════════════════════════════════════════ */
 'use strict';
@@ -365,21 +365,53 @@ function applySelectedFile(file) {
   if (!titleEl.value) titleEl.value = file.name.replace(/\.(txt|text)$/i,'').trim();
 }
 
+
+/* ═══════════════════════════════════════════════
+   이미지 압축 (Firestore 1MB 제한 대응)
+   최대 300x450px, JPEG quality 0.7로 리사이즈
+   ═══════════════════════════════════════════════ */
+function compressImage(file, maxWidth=300, maxHeight=450, quality=0.7) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('이미지를 읽을 수 없어요'));
+    reader.onload = e => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('이미지 변환에 실패했어요'));
+      img.onload = () => {
+        // 비율 유지하며 리사이즈
+        let w = img.width, h = img.height;
+        if (w > maxWidth || h > maxHeight) {
+          const ratio = Math.min(maxWidth / w, maxHeight / h);
+          w = Math.round(w * ratio);
+          h = Math.round(h * ratio);
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 // 표지 업로드
-function onCoverImgSelect(input) {
+async function onCoverImgSelect(input) {
   const file = input.files[0]; if (!file) return;
   if (!file.type.startsWith('image/')) { showToast('이미지 파일만 업로드할 수 있어요', 'error'); input.value=''; return; }
   if (file.size > 5 * 1024 * 1024) { showToast('이미지는 5MB 이하만 가능해요', 'error'); return; }
-  const reader = new FileReader();
-  reader.onload = e => {
-    addCoverBase64 = e.target.result;
+  try {
+    addCoverBase64 = await compressImage(file);
     const img = document.getElementById('coverPreviewImg');
     img.src = addCoverBase64; img.style.display = '';
     document.getElementById('coverPreviewEmpty').style.display = 'none';
     document.getElementById('coverClearBtn').style.display     = '';
     document.getElementById('coverAutoBadge').style.display    = 'none';
-  };
-  reader.readAsDataURL(file);
+  } catch(e) {
+    showToast('이미지 처리에 실패했어요', 'error');
+  }
 }
 function clearCoverPreview() {
   addCoverBase64 = '';
@@ -498,19 +530,19 @@ function selEditGenre(btn) {
   document.querySelectorAll('#editGenreSel .genre-sel-btn').forEach(b => b.classList.remove('on'));
   btn.classList.add('on');
 }
-function onEditCoverSelect(input) {
+async function onEditCoverSelect(input) {
   const file = input.files[0]; if (!file) return;
   if (!file.type.startsWith('image/')) { showToast('이미지 파일만 업로드할 수 있어요', 'error'); input.value=''; return; }
   if (file.size > 5 * 1024 * 1024) { showToast('이미지는 5MB 이하만 가능해요', 'error'); return; }
-  const reader = new FileReader();
-  reader.onload = e => {
-    editCoverBase64 = e.target.result;
+  try {
+    editCoverBase64 = await compressImage(file);
     const img = document.getElementById('editCoverImg');
     img.src = editCoverBase64; img.style.display = '';
     document.getElementById('editCoverEmpty').style.display    = 'none';
     document.getElementById('editCoverClearBtn').style.display = '';
-  };
-  reader.readAsDataURL(file);
+  } catch(e) {
+    showToast('이미지 처리에 실패했어요', 'error');
+  }
 }
 function clearEditCover() {
   editCoverBase64 = '';
@@ -540,7 +572,11 @@ async function saveEdit() {
     openDetail(curId);
     showToast('수정했어요 ✓');
   } catch(e) {
-    showToast('수정에 실패했어요', 'error');
+    console.error('saveEdit error:', e);
+    const msg = e.code === 'resource-exhausted' || e.message?.includes('size')
+      ? '이미지가 너무 커요. 더 작은 이미지를 사용해주세요'
+      : '수정에 실패했어요';
+    showToast(msg, 'error');
   } finally {
     btn.disabled = false; btn.textContent = '수정 완료';
   }
@@ -595,7 +631,7 @@ function downloadNovel() {
 
 /* ═══════════════════════════════════════════════
    네이버 책 검색
-   ⚠️ 임시 방식 (v2.3.2) — API 키 클라이언트 노출
+   ⚠️ 임시 방식 (v2.3.3) — API 키 클라이언트 노출
    PC 생기면 Cloud Functions 이전 예정
    ▶ 아래 두 줄에 본인 네이버 API 키를 입력하세요
    ═══════════════════════════════════════════════ */

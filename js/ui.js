@@ -221,11 +221,11 @@ async function saveNameEdit() {
   okBtn.disabled = true; okBtn.textContent = '저장 중...';
 
   try {
-    // Firebase Auth displayName 업데이트
-    await currentUser.updateProfile({ displayName: name });
+    // Firebase Auth displayName 업데이트 (compat SDK 방식)
+    await auth.currentUser.updateProfile({ displayName: name });
 
     // Firestore users 문서 업데이트 (사용자 목록에 반영)
-    await db.collection('users').doc(currentUser.uid).set(
+    await db.collection('users').doc(auth.currentUser.uid).set(
       { displayName: name },
       { merge: true }
     );

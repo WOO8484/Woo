@@ -1,12 +1,7 @@
-/* ══════════════════════════════════════════════
-   Mr.woo v2.4.3  —  js/novels.js
-   소설 CRUD, 유저 데이터, 홈/서재 렌더링
-   ══════════════════════════════════════════════ */
+/* Mr.woo v2.4.5  —  js/novels.js / 소설 CRUD, 유저 데이터, 홈/서재 렌더링 */
 'use strict';
 
-/* ═══════════════════════════════════════════════
-   Firestore — 소설 목록 실시간 구독
-   ═══════════════════════════════════════════════ */
+/* Firestore — 소설 목록 실시간 구독 */
 function subscribeNovels() {
   if (_novelsUnsub) _novelsUnsub();
   _novelsUnsub = db.collection('novels')
@@ -28,9 +23,7 @@ function subscribeNovels() {
     );
 }
 
-/* ═══════════════════════════════════════════════
-   Firestore — 유저 데이터 (진행률·즐겨찾기)
-   ═══════════════════════════════════════════════ */
+/* Firestore — 유저 데이터 (진행률·즐겨찾기) */
 async function loadUserData() {
   if (!currentUser) return;
   try {
@@ -79,9 +72,7 @@ function getNovelsWithUserData() {
   });
 }
 
-/* ═══════════════════════════════════════════════
-   HOME 렌더링
-   ═══════════════════════════════════════════════ */
+/* HOME 렌더링 */
 function renderHome() {
   document.getElementById('homeDate').textContent =
     new Date().toLocaleDateString('ko-KR', { year:'numeric', month:'long', day:'numeric', weekday:'long' });
@@ -145,9 +136,7 @@ function renderHome() {
   }).join('');
 }
 
-/* ═══════════════════════════════════════════════
-   SHELF 렌더링
-   ═══════════════════════════════════════════════ */
+/* SHELF 렌더링 */
 let shelfView      = 'grid';
 let sortMode       = 'recent';
 let filterMode     = 'all';
@@ -254,9 +243,7 @@ function renderShelf() {
   }
 }
 
-/* ═══════════════════════════════════════════════
-   즐겨찾기
-   ═══════════════════════════════════════════════ */
+/* 즐겨찾기 */
 async function toggleFav(id) {
   try {
     const newFav = !getNovelUserData(id).favorite;
@@ -276,9 +263,7 @@ async function toggleFavDetail() {
   } catch(e) { console.error('toggleFavDetail error:', e); }
 }
 
-/* ═══════════════════════════════════════════════
-   DETAIL
-   ═══════════════════════════════════════════════ */
+/* DETAIL */
 function openDetail(id) {
   const _n = novels.find(x => x.id === id); if (!_n) return;
   const _ud = getNovelUserData(id);
@@ -312,9 +297,7 @@ function openDetail(id) {
 function closeDetail() { document.getElementById('detail').style.display = 'none'; }
 function readFromDetail() { openViewer(curId); }
 
-/* ═══════════════════════════════════════════════
-   소설 추가 (관리자)
-   ═══════════════════════════════════════════════ */
+/* 소설 추가 (관리자) */
 let selG          = null;
 let curFile       = null;
 let addCoverBase64 = '';
@@ -353,11 +336,10 @@ function selGenre(el) {
 }
 
 // 파일 처리
+const MAX_CHARS = 500_000; // 50만 글자 (Firestore 1MB + iOS 메모리 보호)
+
 function onFileDrop(e) { applySelectedFile(e.dataTransfer.files[0]); }
 function onFileSelect(input) { applySelectedFile(input.files[0]); }
-// 글자수 제한 상수 (Firestore 1MB 제한 + iOS 메모리 고려)
-const MAX_CHARS = 500_000; // 50만 글자 ≈ 약 500KB
-
 function applySelectedFile(file) {
   if (!file) return;
   const ext = file.name.split('.').pop().toLowerCase();
@@ -378,11 +360,7 @@ function applySelectedFile(file) {
   if (!titleEl.value) titleEl.value = file.name.replace(/\.(txt|text)$/i,'').trim();
 }
 
-
-/* ═══════════════════════════════════════════════
-   이미지 압축 (Firestore 1MB 제한 대응)
-   최대 300x450px, JPEG quality 0.7로 리사이즈
-   ═══════════════════════════════════════════════ */
+/* 이미지 압축 (Firestore 1MB 제한 대응) / 최대 300x450px, JPEG quality 0.7로 리사이즈 */
 function compressImage(file, maxWidth=300, maxHeight=450, quality=0.7) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -507,9 +485,7 @@ function readTextFileAsync(file, onProgress) {
   });
 }
 
-/* ═══════════════════════════════════════════════
-   소설 수정 (관리자)
-   ═══════════════════════════════════════════════ */
+/* 소설 수정 (관리자) */
 let selEditG       = null;
 let editCoverBase64 = '';
 
@@ -595,9 +571,7 @@ async function saveEdit() {
   }
 }
 
-/* ═══════════════════════════════════════════════
-   소설 삭제 / 서재 제거
-   ═══════════════════════════════════════════════ */
+/* 소설 삭제 / 서재 제거 */
 async function deleteNovel() {
   const n = novels.find(x => x.id === curId); if (!n) return;
   showConfirm(
@@ -643,9 +617,7 @@ function confirmShelfRemove(id) {
   );
 }
 
-/* ═══════════════════════════════════════════════
-   TXT 다운로드
-   ═══════════════════════════════════════════════ */
+/* TXT 다운로드 */
 function downloadNovel() {
   const n = novels.find(x => x.id === curId);
   if (!n || !n.inlineText) { showToast('다운로드할 텍스트가 없어요', 'error'); return; }
@@ -658,11 +630,7 @@ function downloadNovel() {
   showToast('다운로드 완료 📄');
 }
 
-/* ═══════════════════════════════════════════════
-   네이버 책 검색
-   ✅ Firebase Remote Config로 API 키 관리
-   GitHub에 키 노출 없음 / Cloud Functions 불필요
-   ═══════════════════════════════════════════════ */
+/* 네이버 책 검색 / ✅ Firebase Remote Config로 API 키 관리 / GitHub에 키 노출 없음 / Cloud Functions 불필요 */
 
 // Remote Config 초기화
 const _remoteConfig = firebase.remoteConfig();
@@ -784,9 +752,7 @@ function selectNaverBook(idx, item) {
   showToast('메타정보를 불러왔어요 ✓');
 }
 
-/* ═══════════════════════════════════════════════
-   프로필 렌더링
-   ═══════════════════════════════════════════════ */
+/* 프로필 렌더링 */
 async function renderProfile() {
   if (!currentUser) return;
   try {

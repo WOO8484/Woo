@@ -732,16 +732,15 @@ function switchBookSearchTab(tab) {
 }
 
 async function searchBookPopup() {
-  const q          = document.getElementById('naverPopupInput').value.trim();
+  const q   = document.getElementById('naverPopupInput').value.trim();
   if (!q) { showToast('검색어를 입력해주세요', 'error'); return; }
-  const novelOnly  = document.getElementById('novelOnlyCheck').checked;
-  const btn        = document.getElementById('naverPopupBtn');
+  const btn = document.getElementById('naverPopupBtn');
   btn.disabled = true; btn.textContent = '검색 중...';
   document.getElementById('naverPopupResults').innerHTML = '<div class="naver-status">🔍 검색 중...</div>';
   try {
     const items = _bookSearchTab === 'google'
-      ? await callGoogleBooksAPI(q, novelOnly)
-      : await callNaverBookAPI(q, novelOnly);
+      ? await callGoogleBooksAPI(q)
+      : await callNaverBookAPI(q);
     renderNaverPopupResults(items);
   } catch(e) {
     console.error('searchBookPopup error:', e);
@@ -754,15 +753,11 @@ async function searchBookPopup() {
   }
 }
 
-async function callGoogleBooksAPI(q, novelOnly = false) {
+async function callGoogleBooksAPI(q) {
   const ctrl  = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 8000);
   try {
-    const query = novelOnly ? `${q} 소설+subject:fiction` : q;
-    const res   = await fetch(
-      `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=10&printType=books`,
-      { signal: ctrl.signal }
-    );
+    const res  = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&maxResults=10&langRestrict=ko`, { signal: ctrl.signal });
     if (!res.ok) throw new Error('네트워크 오류');
     const data = await res.json();
     return (data.items || []).map(item => {
@@ -829,22 +824,49 @@ function selectNaverPopupBook(item) {
   showToast('메타정보를 불러왔어요 ✓');
 }
 
-async function callNaverBookAPI(q, novelOnly = false) {
-  const ctrl  = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), 8000);
-  const query = novelOnly ? `${q} 소설` : q;
-  let res;
+async function callNaverBookAPI(q) {
+  const cleanNaver = str =>
+    (str || '')
+      .replace(/<[^>]*>/g, '')
+      .replace(/&lt;/g,'<').replace(/&gt;/g,'>')
+      .replace(/&amp;/g,'&').replace(/&quot;/g,'"')
+      .replace(/&#035;/g,'#').replace(/&#039;/g,"'")
+      .trim();
+
+  // 1차: 제목 전용 상세검색 (book_adv)
+  let data;
   try {
-    res = await fetch(`${WORKER_URL}?q=${encodeURIComponent(query)}`, { signal: ctrl.signal });
-  } finally { clearTimeout(timer); }
-  if (!res.ok) throw new Error('네트워크 오류');
-  const data = await res.json();
+    const ctrl1  = new AbortController();
+    const timer1 = setTimeout(() => ctrl1.abort(), 8000);
+    let res1;
+    try {
+      res1 = await fetch(`${WORKER_URL}?d_titl=${encodeURIComponent(q)}`, { signal: ctrl1.signal });
+    } finally {
+      clearTimeout(timer1);
+    }
+    if (res1.ok) data = await res1.json();
+  } catch(e) { /* 폴백으로 진행 */ }
+
+  // 2차: 결과 없으면 일반 검색으로 폴백
+  if (!data?.items?.length) {
+    const ctrl2  = new AbortController();
+    const timer2 = setTimeout(() => ctrl2.abort(), 8000);
+    let res2;
+    try {
+      res2 = await fetch(`${WORKER_URL}?q=${encodeURIComponent(q)}`, { signal: ctrl2.signal });
+    } finally {
+      clearTimeout(timer2);
+    }
+    if (!res2.ok) throw new Error('네트워크 오류');
+    data = await res2.json();
+  }
+
   return (data.items || []).map(item => ({
-    title:       item.title,
-    author:      item.author,
-    description: item.description,
-    coverUrl:    item.image,
-    publisher:   item.publisher,
+    title:       cleanNaver(item.title),
+    author:      cleanNaver(item.author).replace(/\^/g, ', '),
+    description: cleanNaver(item.description),
+    coverUrl:    (item.image || '').replace('http://', 'https://'),
+    publisher:   cleanNaver(item.publisher),
     pubdate:     item.pubdate,
   }));
 }

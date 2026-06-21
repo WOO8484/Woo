@@ -1,4 +1,4 @@
-/* Mr.woo v2.7.0  —  js/novels.js / 소설 CRUD, 유저 데이터, 홈/서재 렌더링 */
+/* Mr.woo v2.7.1  —  js/novels.js / 소설 CRUD, 유저 데이터, 홈/서재 렌더링 */
 'use strict';
 
 /* Firestore — 소설 목록 실시간 구독 */
@@ -110,7 +110,7 @@ function renderHome() {
         <div class="continue-bar"><div class="continue-fill" style="width:${n.progress}%"></div></div>
         <div class="continue-pct">${n.progress}% 진행</div>
       </div>
-      <button class="continue-btn" onclick="event.stopPropagation()">읽기</button>
+      <button class="continue-btn" onclick="event.stopPropagation();openViewer('${n.id}')">읽기</button>
     </div>`;
   }).join('');
 
@@ -306,6 +306,7 @@ function openDetail(id) {
   document.getElementById('dFavBtn').textContent        = n.favorite ? '⭐' : '☆';
 }
 function closeDetail() { document.getElementById('detail').classList.remove('open'); }
+function readFromDetail() { closeDetail(); openViewer(curId); }
 
 /* 소설 추가 (관리자) */
 let selG          = null;

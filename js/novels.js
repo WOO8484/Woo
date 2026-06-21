@@ -1,4 +1,4 @@
-/* Mr.woo v2.9.1  —  js/novels.js / 소설 CRUD, 유저 데이터, 홈/서재 렌더링 */
+/* Mr.woo v2.9.3  —  js/novels.js / 소설 CRUD, 유저 데이터, 홈/서재 렌더링 */
 'use strict';
 
 /* Firestore — 소설 목록 실시간 구독 */
@@ -313,7 +313,7 @@ function readFromDetail() { closeDetail(); openViewer(curId); }
 let selG          = null;
 let curFile       = null;
 let addCoverBase64 = '';
-let naverSelectedBook = null;
+
 
 function openAdd() {
   if (!isAdmin) { showToast('관리자만 소설을 추가할 수 있어요', 'error'); return; }
@@ -321,7 +321,7 @@ function openAdd() {
 }
 function closeAdd() {
   document.getElementById('addModal').classList.remove('on');
-  ['addTitle','addAuthor','addSyn','addTags','naverSearchInput'].forEach(id => {
+  ['addTitle','addAuthor','addSyn','addTags'].forEach(id => {
     document.getElementById(id).value = '';
   });
   document.getElementById('fileName').style.display  = 'none';
@@ -329,7 +329,7 @@ function closeAdd() {
   document.getElementById('fileDropText').textContent = '탭하거나 파일을 여기에 끌어다 놓으세요';
   document.getElementById('fileDrop').classList.remove('has-file');
   document.getElementById('fileInput').value = '';
-  document.getElementById('naverResults').innerHTML = '';
+  
   ['titleFilledBadge','authorFilledBadge','synFilledBadge','coverAutoBadge','coverClearBtn']
     .forEach(id => { document.getElementById(id).style.display = 'none'; });
   const img = document.getElementById('coverPreviewImg');
@@ -337,7 +337,7 @@ function closeAdd() {
   document.getElementById('coverPreviewEmpty').style.display = '';
   document.getElementById('coverImgInput').value = '';
   document.querySelectorAll('#genreSel .genre-sel-btn').forEach(b => b.classList.remove('on'));
-  selG = null; curFile = null; naverSelectedBook = null; addCoverBase64 = '';
+  selG = null; curFile = null; addCoverBase64 = '';
   const btn = document.getElementById('addSaveBtn');
   btn.disabled = false; btn.textContent = '서재에 추가';
 }
@@ -432,7 +432,6 @@ async function onCoverImgSelect(input) {
 }
 function clearCoverPreview() {
   addCoverBase64 = '';
-  if (naverSelectedBook) naverSelectedBook = { ...naverSelectedBook, coverUrl:'' };
   const img = document.getElementById('coverPreviewImg');
   img.src = ''; img.style.display = 'none';
   document.getElementById('coverPreviewEmpty').style.display = '';
@@ -694,6 +693,98 @@ async function downloadNovel() {
 // Cloudflare Worker URL (API 키는 Worker 환경변수에 저장)
 const WORKER_URL = 'https://old-meadow-5c40.qudrnr84.workers.dev';
 
+/* ══════════════════════════════════════════════
+   네이버 책 검색 팝업 (독립)
+   _naverTarget: 'add' | 'edit'
+   ══════════════════════════════════════════════ */
+let _naverTarget = 'add';
+
+function openNaverPopup(target) {
+  _naverTarget = target || 'add';
+  document.getElementById('naverPopupInput').value = '';
+  document.getElementById('naverPopupResults').innerHTML = '';
+  document.getElementById('naverPopupOv').classList.add('on');
+  document.getElementById('naverPopupModal').classList.add('on');
+  setTimeout(() => document.getElementById('naverPopupInput').focus(), 150);
+}
+function closeNaverPopup() {
+  document.getElementById('naverPopupOv').classList.remove('on');
+  document.getElementById('naverPopupModal').classList.remove('on');
+}
+
+async function searchNaverPopup() {
+  const q   = document.getElementById('naverPopupInput').value.trim();
+  if (!q) { showToast('검색어를 입력해주세요', 'error'); return; }
+  const btn = document.getElementById('naverPopupBtn');
+  btn.disabled = true; btn.textContent = '검색 중...';
+  document.getElementById('naverPopupResults').innerHTML = '<div class="naver-status">🔍 검색 중...</div>';
+  try {
+    const items = await callNaverBookAPI(q);
+    renderNaverPopupResults(items);
+  } catch(e) {
+    console.error('searchNaverPopup error:', e);
+    const errMsg = e.name === 'AbortError'
+      ? '검색 시간이 초과됐어요. 다시 시도해주세요.'
+      : '검색 실패. 잠시 후 다시 시도해주세요.';
+    document.getElementById('naverPopupResults').innerHTML = `<div class="naver-status err">${errMsg}</div>`;
+  } finally {
+    btn.disabled = false; btn.textContent = '검색';
+  }
+}
+
+function renderNaverPopupResults(items) {
+  const el = document.getElementById('naverPopupResults');
+  if (!items?.length) { el.innerHTML = '<div class="naver-status err">검색 결과가 없어요</div>'; return; }
+  el.innerHTML = items.map((item, i) => `
+    <div class="naver-result-item" id="naverPopupItem_${i}">
+      <div class="naver-result-cover">
+        ${item.coverUrl ? `<img src="${escapeHtml(item.coverUrl)}" alt="" loading="lazy" onerror="this.parentElement.innerHTML='📚'">` : '📚'}
+      </div>
+      <div class="naver-result-info">
+        <div class="naver-result-title">${escapeHtml(item.title)}</div>
+        <div class="naver-result-author">${escapeHtml(item.author)} · ${escapeHtml(item.publisher||'')}</div>
+        <div class="naver-result-desc">${escapeHtml(item.description||'')}</div>
+      </div>
+    </div>`).join('');
+  items.forEach((item, i) => {
+    document.getElementById(`naverPopupItem_${i}`)?.addEventListener('click', () => selectNaverPopupBook(item));
+  });
+}
+
+function selectNaverPopupBook(item) {
+  if (_naverTarget === 'edit') {
+    // 수정 모달에 적용
+    if (item.title)       document.getElementById('editTitle').value  = stripHtmlTags(item.title);
+    if (item.author)      document.getElementById('editAuthor').value = stripHtmlTags(item.author);
+    if (item.description) document.getElementById('editSyn').value    = stripHtmlTags(item.description);
+    if (item.coverUrl) {
+      editCoverBase64 = item.coverUrl;
+      const img = document.getElementById('editCoverImg');
+      img.src = item.coverUrl; img.style.display = '';
+      document.getElementById('editCoverEmpty').style.display    = 'none';
+      document.getElementById('editCoverClearBtn').style.display = '';
+    }
+  } else {
+    // 추가 모달에 적용
+    if (item.title)       document.getElementById('addTitle').value  = stripHtmlTags(item.title);
+    if (item.author)      document.getElementById('addAuthor').value = stripHtmlTags(item.author);
+    if (item.description) document.getElementById('addSyn').value    = stripHtmlTags(item.description);
+    document.getElementById('titleFilledBadge').style.display  = item.title       ? '' : 'none';
+    document.getElementById('authorFilledBadge').style.display = item.author      ? '' : 'none';
+    document.getElementById('synFilledBadge').style.display    = item.description ? '' : 'none';
+    if (item.coverUrl) {
+      addCoverBase64 = item.coverUrl;
+      const img = document.getElementById('coverPreviewImg');
+      img.src = item.coverUrl; img.style.display = '';
+      document.getElementById('coverPreviewEmpty').style.display = 'none';
+      document.getElementById('coverClearBtn').style.display     = '';
+      document.getElementById('coverAutoBadge').style.display    = '';
+    }
+  }
+  closeNaverPopup();
+  showToast('메타정보를 불러왔어요 ✓');
+}
+
 async function callNaverBookAPI(q) {
   const ctrl  = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 8000);
@@ -715,75 +806,6 @@ async function callNaverBookAPI(q) {
     publisher:   item.publisher,
     pubdate:     item.pubdate,
   }));
-}
-
-async function searchNaverBook() {
-  const q   = document.getElementById('naverSearchInput').value.trim();
-  if (!q) { showToast('검색어를 입력해주세요', 'error'); return; }
-  const btn = document.getElementById('naverSearchBtn');
-  btn.disabled = true; btn.textContent = '검색 중...';
-  document.getElementById('naverResults').innerHTML = '<div class="naver-status">🔍 검색 중...</div>';
-  try {
-    const items = await callNaverBookAPI(q);
-    renderNaverResults(items);
-  } catch(e) {
-    console.error('searchNaverBook error:', e);
-    const errMsg = e.message?.includes('aborted') || e.name === 'AbortError'
-      ? '검색 시간이 초과됐어요. 다시 시도해주세요.'
-      : '검색 실패. 잠시 후 다시 시도해주세요.';
-    document.getElementById('naverResults').innerHTML = `<div class="naver-status err">${errMsg}</div>`;
-    showToast('검색 중 오류가 발생했어요', 'error');
-  } finally {
-    btn.disabled = false; btn.textContent = '검색';
-  }
-}
-
-function renderNaverResults(items) {
-  const el = document.getElementById('naverResults');
-  if (!items || !items.length) {
-    el.innerHTML = '<div class="naver-status err">검색 결과가 없어요</div>';
-    return;
-  }
-  // 5개 초과 시 스크롤 활성화
-  el.style.maxHeight   = items.length > 5 ? '320px' : '';
-  el.style.overflowY   = items.length > 5 ? 'auto'  : '';
-  el.style.borderRadius = items.length > 5 ? '10px'  : '';
-  el.style.border      = items.length > 5 ? '1.5px solid var(--line)' : '';
-  el.innerHTML = items.map((item, i) => `
-    <div class="naver-result-item" id="naverItem_${i}" data-idx="${i}">
-      <div class="naver-result-cover">
-        ${item.coverUrl ? `<img src="${escapeHtml(item.coverUrl)}" alt="" loading="lazy" onerror="this.parentElement.innerHTML='📚'">` : '📚'}
-      </div>
-      <div class="naver-result-info">
-        <div class="naver-result-title">${escapeHtml(item.title)}</div>
-        <div class="naver-result-author">${escapeHtml(item.author)} · ${escapeHtml(item.publisher||'')}</div>
-        <div class="naver-result-desc">${escapeHtml(item.description||'')}</div>
-      </div>
-    </div>`).join('');
-  items.forEach((item, i) => {
-    document.getElementById(`naverItem_${i}`)?.addEventListener('click', () => selectNaverBook(i, item));
-  });
-}
-
-function selectNaverBook(idx, item) {
-  naverSelectedBook = item;
-  document.querySelectorAll('.naver-result-item').forEach(el => el.classList.remove('selected'));
-  document.getElementById(`naverItem_${idx}`)?.classList.add('selected');
-  document.getElementById('addTitle').value  = stripHtmlTags(item.title  || '');
-  document.getElementById('addAuthor').value = stripHtmlTags(item.author || '');
-  document.getElementById('addSyn').value    = stripHtmlTags(item.description || '');
-  document.getElementById('titleFilledBadge').style.display  = item.title       ? '' : 'none';
-  document.getElementById('authorFilledBadge').style.display = item.author      ? '' : 'none';
-  document.getElementById('synFilledBadge').style.display    = item.description ? '' : 'none';
-  if (item.coverUrl) {
-    addCoverBase64 = item.coverUrl;
-    const img = document.getElementById('coverPreviewImg');
-    img.src = item.coverUrl; img.style.display = '';
-    document.getElementById('coverPreviewEmpty').style.display = 'none';
-    document.getElementById('coverClearBtn').style.display     = '';
-    document.getElementById('coverAutoBadge').style.display    = '';
-  }
-  showToast('메타정보를 불러왔어요 ✓');
 }
 
 /* 프로필 렌더링 */

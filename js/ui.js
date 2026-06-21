@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════
-   Mr.woo v2.8.2  —  js/ui.js
+   Mr.woo v2.9.0  —  js/ui.js
    공통 UI 유틸리티
    ══════════════════════════════════════════════ */
 'use strict';
@@ -71,6 +71,7 @@ function showApp() {
   document.getElementById('menuEmail').textContent    = currentUser.email || '';
   document.getElementById('homeUserName').textContent = name;
   renderGenreTabs();
+  loadSignupState();
   switchTab('home');
 }
 
@@ -119,7 +120,7 @@ async function saveNameEdit() {
   okBtn.disabled = true; okBtn.textContent = '저장 중...';
 
   try {
-    if (currentUser.isFirebase && auth.currentUser) {
+    if (auth.currentUser) {
       await auth.currentUser.updateProfile({ displayName: name });
     }
     await db.collection('users').doc(currentUser.uid).set({ displayName: name }, { merge: true });

@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════
-   Mr.woo v2.8.2  —  style.css
+   Mr.woo v2.9.0  —  style.css
    ══════════════════════════════════════════════ */
 
 /* ── DESIGN TOKENS ── */
@@ -52,31 +52,27 @@ html,body {
 }
 .auth-logo { font-size:28px; font-weight:900; letter-spacing:-.5px; margin-bottom:6px; }
 .auth-logo em { color:var(--accent); font-style:normal; }
-.auth-sub { font-size:13px; color:var(--ink3); margin-bottom:20px; }
-.auth-form { width:100%; max-width:360px; display:flex; flex-direction:column; gap:10px; }
-.auth-field { display:flex; flex-direction:column; gap:3px; }
-.auth-input-wrap { position:relative; }
-.auth-input {
-  width:100%; height:48px; border:1.5px solid var(--line);
-  border-radius:12px; padding:0 44px 0 14px; font-size:14px;
-  color:var(--ink); outline:none; background:#fff; transition:border-color .2s;
-}
-.auth-input:focus { border-color:var(--accent); }
-.auth-input.err   { border-color:var(--danger); }
-.auth-pw-eye {
-  position:absolute; right:14px; top:50%; transform:translateY(-50%);
-  background:none; border:none; cursor:pointer; font-size:16px;
-  color:var(--ink3); padding:4px;
-}
+.auth-sub { font-size:13px; color:var(--ink3); margin-bottom:24px; }
+.auth-msg { font-size:12px; text-align:center; min-height:16px; font-weight:600; color:var(--danger); margin-bottom:8px; }
 .auth-btn {
-  width:100%; height:50px; background:var(--accent); color:#fff;
+  width:100%; max-width:360px; height:50px; background:var(--accent); color:#fff;
   border:none; border-radius:14px; font-size:15px; font-weight:700;
-  cursor:pointer; transition:opacity .2s; margin-top:2px;
+  cursor:pointer; transition:opacity .2s;
 }
 .auth-btn:disabled { opacity:.55; cursor:not-allowed; }
-.auth-msg { font-size:12px; text-align:center; min-height:16px; font-weight:600; }
-.auth-msg.err { color:var(--danger); }
-.auth-msg.ok  { color:var(--success); }
+.google-btn {
+  width:100%; max-width:360px; height:50px;
+  display:flex; align-items:center; justify-content:center; gap:10px;
+  background:#fff; border:1.5px solid var(--line); border-radius:14px;
+  font-size:15px; font-weight:600; color:var(--ink); cursor:pointer;
+  transition:background .15s;
+}
+.google-btn:hover   { background:var(--bg2); }
+.google-btn:disabled { opacity:.55; cursor:not-allowed; }
+.google-btn.secondary {
+  background:var(--bg2); border-color:var(--line);
+  font-size:14px; height:46px;
+}
 
 /* ── NAV ── */
 .nav {
@@ -426,6 +422,19 @@ html,body {
 .profile-stat-lbl { font-size:11px; color:var(--ink3); }
 .admin-section       { margin-bottom:24px; }
 .admin-section-title { font-size:14px; font-weight:800; margin-bottom:10px; }
+.signup-toggle-card {
+  background:#fff; border-radius:var(--r); padding:14px 16px;
+  box-shadow:var(--sh); display:flex; align-items:center;
+  justify-content:space-between; gap:12px;
+}
+.signup-toggle-label { font-size:13px; font-weight:700; margin-bottom:3px; }
+.signup-toggle-sub   { font-size:11px; color:var(--ink3); }
+.signup-toggle-btn {
+  flex-shrink:0; height:34px; padding:0 16px;
+  border:none; border-radius:20px; font-size:12px; font-weight:700;
+  cursor:pointer; background:var(--accent); color:#fff;
+}
+.signup-toggle-btn.open { background:#f0fdf4; color:#16a34a; border:1.5px solid #86efac; }
 .user-list  { background:#fff; border-radius:var(--r); overflow:hidden; box-shadow:var(--sh); }
 .user-item  { display:flex; align-items:center; gap:12px; padding:14px 16px; border-bottom:1px solid var(--line); }
 .user-item:last-child { border-bottom:none; }
@@ -597,17 +606,10 @@ html,body {
   flex-direction:column; background:#fff;
 }
 #viewer.open { display:flex; }
-.v-topbar {
-  flex-shrink:0; display:flex; align-items:center; justify-content:space-between;
-  padding:calc(12px + env(safe-area-inset-top)) 16px 12px;
-  border-bottom:1px solid var(--line); background:inherit;
-}
-.v-title { font-size:15px; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; margin-right:12px; }
-.v-close { flex-shrink:0; width:32px; height:32px; border:none; background:var(--bg2); border-radius:50%; font-size:14px; cursor:pointer; color:var(--ink2); }
 #vPage   { flex:1; overflow:hidden; display:flex; flex-direction:column; }
 .v-body  {
   flex:1; overflow-y:auto; overflow-x:hidden;
-  padding:24px 24px max(env(safe-area-inset-bottom), 40px);
+  padding:calc(env(safe-area-inset-top) + 32px) 32px max(env(safe-area-inset-bottom), 40px);
   box-sizing:border-box; -webkit-overflow-scrolling:touch;
   font-size:17px; line-height:1.9; color:var(--ink);
   word-break:keep-all; overflow-wrap:break-word;
@@ -620,6 +622,7 @@ html,body {
 .vtap-left   { position:fixed; left:0;  top:0; width:25%; height:100%; z-index:505; cursor:pointer; touch-action:manipulation; }
 .vtap-right  { position:fixed; right:0; top:0; width:25%; height:100%; z-index:505; cursor:pointer; touch-action:manipulation; }
 .vtap-center { position:fixed; left:25%; right:25%; top:0; height:100%; z-index:505; cursor:pointer; touch-action:manipulation; }
+.vset-apply-btn { width:100%; height:48px; margin-top:16px; background:var(--accent); color:#fff; border:none; border-radius:12px; font-size:15px; font-weight:700; cursor:pointer; }
 
 /* ── 뷰어 팝업 ── */
 .vpopup-ov { position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:520; display:none; align-items:center; justify-content:center; }

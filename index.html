@@ -41,20 +41,27 @@
 <div id="authScreen" style="display:none">
   <div class="auth-logo">🚀 <em>Mr.woo</em></div>
   <div class="auth-sub">소설 서재에 오신 것을 환영해요</div>
-  <div class="auth-form" id="loginForm">
-    <div class="auth-msg" id="authMsg"></div>
-    <div class="auth-field">
-      <input class="auth-input" id="authEmail" type="text" placeholder="아이디 또는 이메일" autocomplete="username">
-    </div>
-    <div class="auth-field">
-      <div class="auth-input-wrap">
-        <input class="auth-input" id="authPw" type="password" placeholder="비밀번호" autocomplete="current-password">
-        <button class="auth-pw-eye" onclick="toggleEye()" tabindex="-1">🙈</button>
-      </div>
-    </div>
-    <button class="auth-btn" id="authBtn" onclick="doLogin()">로그인</button>
+  <div class="auth-msg" id="authMsg"></div>
+  <button class="google-btn" id="googleLoginBtn" onclick="doGoogleLogin()">
+    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" height="18">
+    Google로 로그인
+  </button>
+  <div id="signupSection" style="display:none;margin-top:12px;text-align:center">
+    <div style="font-size:12px;color:var(--ink3);margin-bottom:8px">아직 계정이 없으신가요?</div>
+    <button class="google-btn secondary" id="googleSignupBtn" onclick="doGoogleSignup()">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" height="18">
+      Google로 가입 신청
+    </button>
   </div>
-  <div style="text-align:center;margin-top:20px;font-size:11px;color:var(--ink3)">v2.8.2</div>
+  <div style="text-align:center;margin-top:24px;font-size:11px;color:var(--ink3)">v2.9.0</div>
+</div>
+
+<!-- ── 승인 대기 화면 ── -->
+<div id="pendingScreen" style="display:none; position:fixed; inset:0; z-index:900; background:var(--bg); flex-direction:column; align-items:center; justify-content:center; padding:32px; text-align:center;">
+  <div style="font-size:48px;margin-bottom:16px">⏳</div>
+  <div style="font-size:18px;font-weight:800;margin-bottom:12px">승인 대기 중</div>
+  <div id="pendingMsg" style="font-size:14px;color:var(--ink3);line-height:1.7;margin-bottom:24px"></div>
+  <button class="auth-btn" style="max-width:280px" onclick="auth.signOut();document.getElementById('pendingScreen').style.display='none';showAuthScreen()">돌아가기</button>
 </div>
 
 <!-- ── USER MENU ── -->
@@ -69,7 +76,7 @@
 <!-- ── NAV ── -->
 <nav class="nav" id="mainNav">
   <div class="nav-logo">🚀 <em>Mr.woo</em></div>
-  <div class="nav-version">v2.8.2</div>
+  <div class="nav-version">v2.9.0</div>
   <div class="nav-right">
     <button class="nav-add" id="navAddBtn" onclick="openAdd()" title="소설 추가">＋</button>
     <div class="nav-avatar" id="navAvatar" onclick="toggleUserMenu(event)">🐱</div>
@@ -170,12 +177,25 @@
   </div>
   <!-- 관리자 전용 패널 -->
   <div id="adminPanel" style="display:none">
-    <!-- 사용자 추가 -->
+    <!-- 가입 신청 ON/OFF -->
     <div class="admin-section">
-      <div class="admin-section-title" style="display:flex;align-items:center;justify-content:space-between">
-        👥 사용자 목록 <span class="admin-badge" id="userCountBadge">0</span>
-        <button class="add-user-btn" onclick="openAddUser()">+ 추가</button>
+      <div class="admin-section-title">🔐 가입 신청</div>
+      <div class="signup-toggle-card">
+        <div>
+          <div class="signup-toggle-label" id="signupToggleLabel">현재 닫힘 🔴</div>
+          <div class="signup-toggle-sub">열면 로그인 화면에 가입 신청 버튼이 표시됩니다</div>
+        </div>
+        <button class="signup-toggle-btn" id="signupToggleBtn" onclick="toggleSignupOpen()">열기</button>
       </div>
+    </div>
+    <!-- 가입 대기 목록 -->
+    <div class="admin-section" id="pendingSection">
+      <div class="admin-section-title">⏳ 가입 대기 <span class="admin-badge" id="pendingCountBadge">0</span></div>
+      <div class="user-list" id="pendingList"></div>
+    </div>
+    <!-- 사용자 목록 -->
+    <div class="admin-section">
+      <div class="admin-section-title">👥 사용자 목록 <span class="admin-badge" id="userCountBadge">0</span></div>
       <div class="user-list" id="userList"></div>
     </div>
   </div>
@@ -391,30 +411,6 @@
   </div>
 </div>
 
-<!-- ── 사용자 추가 모달 ── -->
-<div class="confirm-ov" id="addUserOv">
-  <div class="confirm-box">
-    <div class="confirm-icon">👤</div>
-    <div class="confirm-title">새 사용자 추가</div>
-    <div class="confirm-msg" style="text-align:left">
-      <div class="auth-field" style="margin-bottom:8px">
-        <input class="auth-input" id="addUserName" type="text" placeholder="이름" style="height:40px;font-size:14px">
-      </div>
-      <div class="auth-field" style="margin-bottom:8px">
-        <input class="auth-input" id="addUserUsername" type="text" placeholder="아이디" style="height:40px;font-size:14px">
-      </div>
-      <div class="auth-field" style="margin-bottom:4px">
-        <input class="auth-input" id="addUserPw" type="password" placeholder="비밀번호 (4자 이상)" style="height:40px;font-size:14px">
-      </div>
-      <div id="addUserMsg" style="font-size:12px;color:var(--danger);min-height:16px;margin-top:4px"></div>
-    </div>
-    <div class="confirm-btns">
-      <button class="confirm-cancel" onclick="closeAddUser()">취소</button>
-      <button class="confirm-ok" id="addUserBtn" style="background:var(--accent)" onclick="submitAddUser()">계정 생성</button>
-    </div>
-  </div>
-</div>
-
 <!-- ── TOAST ── -->
 <div class="toast" id="toast"></div>
 
@@ -429,10 +425,6 @@
      VIEWER
      ══════════════════════════════════════════════════════════════ -->
 <div id="viewer">
-  <div class="v-topbar">
-    <div class="v-title" id="vTitle"></div>
-    <button class="v-close" onclick="closeViewer()">✕</button>
-  </div>
   <div id="vPage">
     <div class="v-body" id="vBody"></div>
   </div>
@@ -522,6 +514,8 @@
         <button class="vctrl-btn" onclick="vChLh(0.1)">＋</button>
       </div>
     </div>
+    <!-- 적용 버튼 -->
+    <button class="vset-apply-btn" onclick="closeVSettings()">적용</button>
   </div>
 </div>
 

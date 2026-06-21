@@ -1,4 +1,4 @@
-/* Mr.woo v2.8.2  —  js/novels.js / 소설 CRUD, 유저 데이터, 홈/서재 렌더링 */
+/* Mr.woo v2.9.0  —  js/novels.js / 소설 CRUD, 유저 데이터, 홈/서재 렌더링 */
 'use strict';
 
 /* Firestore — 소설 목록 실시간 구독 */
@@ -800,7 +800,7 @@ async function renderProfile() {
     document.getElementById('pStatReading').textContent = plist.filter(n => n.progress > 0 && n.progress < 100).length;
     document.getElementById('pStatDone').textContent    = plist.filter(n => n.progress >= 100).length;
     document.getElementById('adminPanel').style.display = isAdmin ? 'block' : 'none';
-    if (isAdmin) await renderUserList();
+    if (isAdmin) await Promise.all([renderPendingList(), renderUserList()]);
   } catch(e) {
     console.error('renderProfile error:', e);
     showToast('프로필을 불러오지 못했어요', 'error');

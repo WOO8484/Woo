@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════
-   Mr.woo v2.6.3  —  style.css
+   Mr.woo v2.7.0  —  style.css
    ══════════════════════════════════════════════ */
 
 /* ── DESIGN TOKENS ── */
@@ -412,114 +412,6 @@ html,body {
 .dread-btn { flex:1; height:52px; background:var(--accent); color:#fff; border:none; border-radius:14px; font-size:15px; font-weight:700; cursor:pointer; }
 .dfav-btn  { width:52px; height:52px; border-radius:14px; border:1.5px solid var(--line); background:#fff; font-size:22px; cursor:pointer; flex-shrink:0; }
 
-/* ── VIEWER ── */
-#viewer { display:none; position:fixed; inset:0; z-index:200; flex-direction:column; }
-.vbody  {
-  flex:1; overflow-y:auto; overflow-x:hidden;
-  width:100%; display:block;
-  box-sizing:border-box;
-  -webkit-overflow-scrolling:touch;
-}
-.vpage  {
-  width:100%;
-  max-width:640px; margin:0 auto;
-  padding:32px 28px max(env(safe-area-inset-bottom), 40px);
-  box-sizing:border-box;
-}
-/* 투명 하단 고정바 — 홈 인디케이터/글자 잘림 방지 */
-.vfoot {
-  flex-shrink:0;
-  height:max(env(safe-area-inset-bottom), 34px);
-  pointer-events:none;
-}
-.vtext  {
-  font-size:17px; line-height:1.9; text-align:left;
-  word-break:keep-all; overflow-wrap:break-word;
-}
-.vtext p { margin-bottom:1em; }
-@keyframes chIn  { from{opacity:0;transform:translateX(30px)}  to{opacity:1;transform:none} }
-@keyframes chOut { from{opacity:0;transform:translateX(-30px)} to{opacity:1;transform:none} }
-.vpage.anim-next { animation:chIn  .18s cubic-bezier(.25,.46,.45,.94) both; }
-.vpage.anim-prev { animation:chOut .18s cubic-bezier(.25,.46,.45,.94) both; }
-.vtap-left   { position:fixed; left:0;   top:0; width:25%; height:100%; z-index:505; cursor:pointer; touch-action:manipulation; }
-.vtap-right  { position:fixed; right:0;  top:0; width:25%; height:100%; z-index:505; cursor:pointer; touch-action:manipulation; }
-.vtap-center { position:fixed; left:25%; right:25%; top:0; height:100%; z-index:505; cursor:pointer; touch-action:manipulation; }
-
-/* ── VIEWER POPUP ── */
-.vpopup-ov { position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:520; display:none; align-items:center; justify-content:center; }
-.vpopup-ov.on { display:flex; }
-.vpopup { background:#fff; border-radius:20px; padding:24px 20px 20px; width:88%; max-width:360px; }
-.vpopup-title { font-size:16px; font-weight:800; margin-bottom:16px; }
-.vpopup-slider-wrap { margin-bottom:8px; }
-.vpopup-info  { font-size:12px; color:var(--ink3); margin-bottom:16px; }
-.vpopup-btns  { display:flex; flex-direction:column; gap:8px; margin-bottom:14px; }
-.vpopup-btn {
-  width:100%; height:52px; border-radius:12px; border:1px solid var(--line);
-  background:#fff; font-size:14px; font-weight:600; cursor:pointer;
-  display:flex; align-items:center; gap:14px; padding:0 18px; color:var(--ink);
-}
-.vpopup-btn span   { font-size:22px; }
-.vpopup-btn.danger { color:var(--danger); border-color:var(--danger-line); }
-.vpopup-close {
-  width:100%; height:48px; border-radius:12px; background:var(--accent);
-  color:#fff; border:none; font-size:14px; font-weight:700; cursor:pointer;
-}
-
-/* ── MODAL (챕터목록 / 읽기설정) ── */
-.modal-ov { position:fixed; inset:0; background:rgba(0,0,0,.3); z-index:540; opacity:0; pointer-events:none; transition:opacity .2s; }
-.modal-ov.on { opacity:1; pointer-events:all; }
-.modal {
-  position:fixed; bottom:0; left:0; right:0; background:var(--bg);
-  border-radius:20px 20px 0 0;
-  padding:10px 16px max(20px,env(safe-area-inset-bottom));
-  z-index:550; transform:translateY(100%);
-  transition:transform .28s cubic-bezier(.32,.72,0,1);
-}
-.modal.on { transform:translateY(0); }
-.mhandle { width:36px; height:4px; background:var(--line); border-radius:2px; margin:0 auto 10px; }
-.modal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
-.modal-title  { font-size:15px; font-weight:800; }
-.modal-close  {
-  width:32px; height:32px; border-radius:50%; border:none;
-  background:var(--bg2); font-size:18px; cursor:pointer;
-  display:flex; align-items:center; justify-content:center; color:var(--ink2);
-}
-/* 챕터목록은 스크롤, 설정은 고정 */
-.modal-scroll { max-height:60vh; overflow-y:auto; margin:0 -16px; padding:0 16px; }
-#setModal .modal-scroll { max-height:none; overflow-y:visible; margin:0; padding:0; }
-
-/* ── CHAPTER LIST ── */
-
-
-/* ── SETTINGS ── */
-.set-label {
-  font-size:11px; font-weight:700; color:var(--ink3);
-  text-transform:uppercase; letter-spacing:.5px;
-  margin:10px 0 6px; display:flex; align-items:center;
-}
-.preview-box {
-  background:var(--bg2); border-radius:var(--r); padding:10px 14px;
-  text-align:center; font-size:14px; margin-bottom:4px;
-  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-}
-.theme-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-bottom:2px; }
-.theme-card { border-radius:10px; border:2px solid var(--line); padding:6px 4px; text-align:center; cursor:pointer; transition:border-color var(--tr); }
-.theme-card.on { border-color:var(--accent); }
-.theme-preview { border-radius:6px; padding:6px 4px; font-size:12px; font-weight:700; margin-bottom:3px; }
-.theme-card span { font-size:10px; color:var(--ink3); }
-.font-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-bottom:2px; }
-.font-btn { height:36px; border-radius:10px; border:2px solid var(--line); background:#fff; font-size:13px; font-weight:600; cursor:pointer; transition:all var(--tr); }
-.font-btn.on { border-color:var(--accent); color:var(--accent); background:var(--accent2); }
-.slider-row { display:flex; align-items:center; gap:8px; margin-bottom:2px; }
-.slider-min,.slider-max { font-size:10px; color:var(--ink3); white-space:nowrap; }
-.ns-slider { flex:1; height:4px; accent-color:var(--accent); cursor:pointer; }
-.set-val-badge { background:var(--accent2); color:var(--accent); font-size:10px; font-weight:700; padding:2px 8px; border-radius:20px; margin-left:6px; }
-.prow  { display:flex; align-items:center; justify-content:space-between; padding:4px 0; }
-.plabel { font-size:12px; color:var(--ink2); }
-.fctrl  { display:flex; align-items:center; gap:8px; }
-.fbtn   { width:30px; height:30px; border-radius:50%; border:1.5px solid var(--line); background:#fff; font-size:18px; font-weight:300; cursor:pointer; display:flex; align-items:center; justify-content:center; }
-.fval   { font-size:14px; font-weight:700; min-width:28px; text-align:center; }
-
 
 /* ── PROFILE ── */
 .profile-hero {
@@ -725,6 +617,4 @@ html,body {
 .toast.error { background:rgba(239,68,68,.92); }
 
 /* ── COMPLETE POPUP ── */
-.complete-ov { position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:600; display:flex; align-items:center; justify-content:center; padding:20px; opacity:0; pointer-events:none; transition:opacity .2s; }
-.complete-ov.on { opacity:1; pointer-events:all; }
-.complete-box { background:#fff; border-radius:16px; padding:28px 20px 18px; max-width:320px; width:100%; text-align:center; box-shadow:var(--sh2); }
+

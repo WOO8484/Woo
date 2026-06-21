@@ -78,7 +78,7 @@
     <button class="auth-btn" id="signupBtn" onclick="doSignupRequest()">가입 신청하기</button>
   </div>
 
-  <div style="text-align:center;margin-top:20px;font-size:11px;color:var(--ink3)">v2.6.3</div>
+  <div style="text-align:center;margin-top:20px;font-size:11px;color:var(--ink3)">v2.7.0</div>
 </div>
 
 <!-- ── USER MENU ── -->
@@ -93,7 +93,7 @@
 <!-- ── NAV ── -->
 <nav class="nav" id="mainNav">
   <div class="nav-logo">🚀 <em>Mr.woo</em></div>
-  <div class="nav-version">v2.6.3</div>
+  <div class="nav-version">v2.7.0</div>
   <div class="nav-right">
     <button class="nav-add" id="navAddBtn" onclick="openAdd()" title="소설 추가">＋</button>
     <div class="nav-avatar" id="navAvatar" onclick="toggleUserMenu(event)">🐱</div>
@@ -260,99 +260,8 @@
     </div>
   </div>
   <div class="dfoot">
-    <button class="dread-btn" id="dReadBtn" onclick="readFromDetail()">처음부터 읽기</button>
+    <button class="dread-btn" id="dReadBtn">처음부터 읽기</button>
     <button id="dFavBtn" onclick="toggleFavDetail()" class="dfav-btn">☆</button>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════════════════════════════
-     VIEWER
-     ══════════════════════════════════════════════════════════════ -->
-<div id="viewer" style="display:none; position:fixed; inset:0; z-index:200; flex-direction:column;">
-  <div class="vbody" id="vBody">
-    <div class="vpage" id="vPage">
-      <div class="vtext" id="vText"></div>
-    </div>
-  </div>
-  <div class="vfoot"></div>
-  <div class="vtap-left"   onclick="prevCh()"></div>
-  <div class="vtap-right"  onclick="nextCh()"></div>
-  <div class="vtap-center" onclick="openViewerPopup()"></div>
-</div>
-
-<!-- ── VIEWER POPUP ── -->
-<div class="vpopup-ov" id="vpopupOv" onclick="closeViewerPopup()">
-  <div class="vpopup" onclick="event.stopPropagation()">
-    <div class="vpopup-title" id="vpopupTitle"></div>
-    <div class="vpopup-slider-wrap" id="vpopupSliderWrap" style="display:none">
-      <input type="range" class="ns-slider" id="vpopupSlider" min="0" step="1" value="0"
-        style="width:100%"
-        oninput="onSliderInput(this.value)" onchange="onSliderChange(this.value)">
-    </div>
-    <div class="vpopup-info" id="vpopupInfo"></div>
-    <div class="vpopup-btns">
-      <button class="vpopup-btn" onclick="closeViewerPopup();setTimeout(openSettings,150)"><span>⚙️</span> 읽기 설정</button>
-      <button class="vpopup-btn danger" onclick="closeViewerPopup();setTimeout(closeViewer,150)"><span>✕</span> 서재로 나가기</button>
-    </div>
-    <button class="vpopup-close" onclick="closeViewerPopup()">계속 읽기</button>
-  </div>
-</div>
-
-<!-- ── SETTINGS ── -->
-<div class="modal-ov" id="setOv"    onclick="closeSettings()"></div>
-<div class="modal"    id="setModal">
-  <div class="mhandle"></div>
-  <div class="modal-header">
-    <div class="modal-title">읽기 설정</div>
-    <div style="display:flex;gap:8px;align-items:center">
-      <button style="height:28px;padding:0 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg2);font-size:11px;cursor:pointer" onclick="resetSettings()">초기화</button>
-      <button class="modal-close" onclick="closeSettings()">×</button>
-    </div>
-  </div>
-  <div class="modal-scroll">
-    <div class="preview-box" id="previewText">가나다라 AaBbCc 소설 미리보기</div>
-    <div class="set-label">배경 테마</div>
-    <div class="theme-grid">
-      <div class="theme-card on" id="theme-light"  onclick="setTheme('light')">  <div class="theme-preview" style="background:#fff;color:#2A2A2A">가나다</div><span>라이트</span></div>
-      <div class="theme-card"   id="theme-sepia"  onclick="setTheme('sepia')">  <div class="theme-preview" style="background:#F4ECD8;color:#3D2B1A">가나다</div><span>세피아</span></div>
-      <div class="theme-card"   id="theme-dark"   onclick="setTheme('dark')">   <div class="theme-preview" style="background:#1C1C28;color:#C8C8D8">가나다</div><span>다크</span></div>
-      <div class="theme-card"   id="theme-amoled" onclick="setTheme('amoled')"> <div class="theme-preview" style="background:#000;color:#E0E0E0">가나다</div><span>AMOLED</span></div>
-    </div>
-    <div class="set-label">글꼴</div>
-    <div class="font-grid">
-      <button class="font-btn on" data-font="system" onclick="setFont('system',this)">기본</button>
-      <button class="font-btn"    data-font="gothic" onclick="setFont('gothic',this)" style="font-family:'Apple SD Gothic Neo',sans-serif">고딕</button>
-      <button class="font-btn"    data-font="serif"  onclick="setFont('serif',this)"  style="font-family:'Nanum Myeongjo',serif">명조</button>
-      <button class="font-btn"    data-font="mono"   onclick="setFont('mono',this)"   style="font-family:monospace">모노</button>
-    </div>
-    <div class="set-label">글자 크기 <span class="set-val-badge" id="fValBadge">17px</span></div>
-    <div class="slider-row">
-      <span class="slider-min">작게</span>
-      <input type="range" class="ns-slider" id="fontSlider" min="13" max="26" value="17" oninput="chFontSlider(this.value)">
-      <span class="slider-max">크게</span>
-    </div>
-    <div class="prow">
-      <span class="plabel">빠른 조절</span>
-      <div class="fctrl">
-        <button class="fbtn" onclick="chFont(-1)">−</button>
-        <span class="fval" id="fVal">17</span>
-        <button class="fbtn" onclick="chFont(1)">＋</button>
-      </div>
-    </div>
-    <div class="set-label">줄 간격 <span class="set-val-badge" id="lhBadge">1.9</span></div>
-    <div class="slider-row">
-      <span class="slider-min">좁게</span>
-      <input type="range" class="ns-slider" id="lhSlider" min="140" max="260" step="10" value="190" oninput="chLineHeight(this.value)">
-      <span class="slider-max">넓게</span>
-    </div>
-    <div class="prow">
-      <span class="plabel">빠른 조절</span>
-      <div class="fctrl">
-        <button class="fbtn" onclick="chLh(-0.1)">−</button>
-        <span class="fval" id="lhVal">1.9</span>
-        <button class="fbtn" onclick="chLh(0.1)">＋</button>
-      </div>
-    </div>
   </div>
 </div>
 
@@ -519,19 +428,6 @@
   </div>
 </div>
 
-<!-- ── COMPLETE POPUP ── -->
-<div class="complete-ov" id="completeOv">
-  <div class="complete-box">
-    <div style="font-size:56px;margin-bottom:12px">🎉</div>
-    <div style="font-size:18px;font-weight:800;margin-bottom:6px">완독을 축하드려요!</div>
-    <div style="font-size:13px;color:var(--ink3);margin-bottom:20px" id="completeMsg"></div>
-    <div style="display:flex;flex-direction:column;gap:8px">
-      <button style="height:46px;background:var(--accent);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer" onclick="closeComplete(true)">서재로 나가기</button>
-      <button style="height:40px;background:var(--bg2);border:none;border-radius:12px;font-size:13px;font-weight:600;cursor:pointer;color:var(--ink2)" onclick="closeComplete(false)">처음부터 다시 읽기</button>
-    </div>
-  </div>
-</div>
-
 <!-- ── TOAST ── -->
 <div class="toast" id="toast"></div>
 
@@ -546,7 +442,6 @@
 <script src="js/config.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/novels.js"></script>
-<script src="js/viewer.js"></script>
 <script src="js/admin.js"></script>
 <script src="js/auth.js"></script>
 </body>

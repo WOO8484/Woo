@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════
-   Mr.woo v2.6.3  —  js/config.js
+   Mr.woo v2.7.0  —  js/config.js
    Firebase 설정 및 앱 전역 상수
    ══════════════════════════════════════════════ */
 'use strict';
@@ -37,18 +37,6 @@ const GENRE_LABEL = {
   romance:'로맨스', fantasy:'판타지', thriller:'스릴러',
   sf:'SF', historical:'역사', mystery:'미스터리', etc:'기타',
 };
-const FONTS = {
-  system: "-apple-system,'Apple SD Gothic Neo',sans-serif",
-  gothic: "'Apple SD Gothic Neo','Noto Sans KR',sans-serif",
-  serif:  "'Nanum Myeongjo','Georgia',serif",
-  mono:   "'Courier New',monospace",
-};
-const THEMES = {
-  light:  { bg:'#ffffff', ink:'#2A2A2A', bg2:'#F8F8FC' },
-  sepia:  { bg:'#F4ECD8', ink:'#3D2B1A', bg2:'#EDE0C4' },
-  dark:   { bg:'#1C1C28', ink:'#C8C8D8', bg2:'#252535' },
-  amoled: { bg:'#000000', ink:'#E0E0E0', bg2:'#111111' },
-};
 const AVATARS = ['🐱','🐶','🐰','🐻','🦊','🐼','🐨','🐸','🐙','🦄','🐧','🦋','🐬','🦁','🐮','🐯'];
 
 /* ── 앱 전역 상태 ────────────────────────── */
@@ -57,5 +45,4 @@ let userDataCache = {};      // { [novelId]: { progress, favorite, lastReadAt, c
 let currentUser   = null;    // Firebase auth user
 let isAdmin       = false;
 let _novelsUnsub  = null;    // Firestore 구독 해제 함수
-let curId         = null;    // 현재 열린 소설 ID (novels.js, viewer.js 공유)
-const _chsCache   = new Map(); // novelId → chapters[] (viewer.js 사용)
+let curId         = null;    // 현재 열린 소설 ID

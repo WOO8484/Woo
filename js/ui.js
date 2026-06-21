@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════
-   Mr.woo v2.6.3  —  js/ui.js
+   Mr.woo v2.7.0  —  js/ui.js
    공통 UI 유틸리티
    ══════════════════════════════════════════════ */
 'use strict';
@@ -93,96 +93,6 @@ function showConfirm(msg, onOk) {
 }
 function closeConfirm() {
   document.getElementById('confirmOv').classList.remove('on');
-}
-
-/* ── 읽기 설정 (localStorage) ────────────────── */
-let vSettings = { fontSize:17, lineHeight:1.9, fontFamily:'system', theme:'light' };
-
-(function loadSettings() {
-  try {
-    const s = localStorage.getItem('ns_settings');
-    if (s) vSettings = { ...vSettings, ...JSON.parse(s) };
-  } catch(e) {}
-})();
-
-function saveSettings() {
-  localStorage.setItem('ns_settings', JSON.stringify(vSettings));
-}
-function applyViewerSettings() {
-  const t  = THEMES[vSettings.theme] || THEMES.light;
-  const vb = document.getElementById('vBody');
-  if (vb) {
-    vb.style.background = t.bg;
-    vb.style.color      = t.ink;
-  }
-  const viewer = document.getElementById('viewer');
-  if (viewer) viewer.style.background = t.bg;
-  const vt = document.getElementById('vText');
-  if (vt) {
-    vt.style.fontSize   = vSettings.fontSize + 'px';
-    vt.style.lineHeight = vSettings.lineHeight;
-    vt.style.fontFamily = FONTS[vSettings.fontFamily] || FONTS.system;
-    vt.style.textAlign  = 'left';
-  }
-  const prev = document.getElementById('previewText');
-  if (prev) {
-    prev.style.fontSize   = vSettings.fontSize + 'px';
-    prev.style.fontFamily = FONTS[vSettings.fontFamily] || FONTS.system;
-  }
-}
-function syncSettingsUI() {
-  document.getElementById('fontSlider').value      = vSettings.fontSize;
-  document.getElementById('fVal').textContent      = vSettings.fontSize;
-  document.getElementById('fValBadge').textContent = vSettings.fontSize + 'px';
-  document.getElementById('lhSlider').value        = vSettings.lineHeight * 100;
-  document.getElementById('lhBadge').textContent   = vSettings.lineHeight;
-  document.getElementById('lhVal').textContent     = vSettings.lineHeight;
-  document.querySelectorAll('.theme-card').forEach(c => c.classList.toggle('on', c.id === 'theme-' + vSettings.theme));
-  document.querySelectorAll('.font-btn').forEach(b => b.classList.toggle('on', b.dataset.font === vSettings.fontFamily));
-  applyViewerSettings();
-}
-function chLh(d) {
-  const v = Math.max(1.4, Math.min(2.6, parseFloat((vSettings.lineHeight + d).toFixed(1))));
-  vSettings.lineHeight = v;
-  document.getElementById('lhSlider').value    = v * 100;
-  document.getElementById('lhBadge').textContent = v;
-  document.getElementById('lhVal').textContent   = v;
-  applyViewerSettings(); saveSettings();
-}
-function openSettings()  {
-  syncSettingsUI();
-  document.getElementById('setOv').classList.add('on');
-  document.getElementById('setModal').classList.add('on');
-}
-function closeSettings() {
-  document.getElementById('setOv').classList.remove('on');
-  document.getElementById('setModal').classList.remove('on');
-}
-function setTheme(t) {
-  vSettings.theme = t;
-  document.querySelectorAll('.theme-card').forEach(c => c.classList.toggle('on', c.id === 'theme-' + t));
-  applyViewerSettings(); saveSettings();
-}
-function setFont(f, el) {
-  vSettings.fontFamily = f;
-  document.querySelectorAll('.font-btn').forEach(b => b.classList.remove('on'));
-  el.classList.add('on');
-  applyViewerSettings(); saveSettings();
-}
-function chFontSlider(v) { chFontApply(parseInt(v)); }
-function chFont(d)        { chFontApply(Math.max(13, Math.min(26, vSettings.fontSize + d))); }
-function chFontApply(v) {
-  vSettings.fontSize = v;
-  document.getElementById('fontSlider').value      = v;
-  document.getElementById('fVal').textContent      = v;
-  document.getElementById('fValBadge').textContent = v + 'px';
-  applyViewerSettings(); saveSettings();
-}
-function chLineHeight(v) {
-  vSettings.lineHeight = parseFloat((v / 100).toFixed(1));
-  document.getElementById('lhBadge').textContent = vSettings.lineHeight;
-  document.getElementById('lhVal').textContent   = vSettings.lineHeight;
-  applyViewerSettings(); saveSettings();
 }
 
 /* ═══════════════════════════════════════════════
@@ -280,11 +190,4 @@ function applySignupState() {
     btn.classList.toggle('open', _signupOpen);
   }
   if (label) label.textContent = _signupOpen ? '현재 열림 🟢' : '현재 닫힘 🔴';
-}
-
-function resetSettings() {
-  vSettings = { fontSize:17, lineHeight:1.9, fontFamily:'system', theme:'light' };
-  syncSettingsUI();
-  localStorage.removeItem('ns_settings');
-  showToast('설정 초기화했어요');
 }

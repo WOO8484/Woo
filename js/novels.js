@@ -1,4 +1,4 @@
-/* Mr.woo v2.6.3  —  js/novels.js / 소설 CRUD, 유저 데이터, 홈/서재 렌더링 */
+/* Mr.woo v2.7.0  —  js/novels.js / 소설 CRUD, 유저 데이터, 홈/서재 렌더링 */
 'use strict';
 
 /* Firestore — 소설 목록 실시간 구독 */
@@ -13,7 +13,6 @@ function subscribeNovels() {
           if (n.addedAt?.toDate)    n.addedAt    = n.addedAt.toDate().toISOString();
           if (n.lastReadAt?.toDate) n.lastReadAt = n.lastReadAt.toDate().toISOString();
         });
-        _chsCache.clear();
         batchRender();
       },
       err => {
@@ -42,21 +41,6 @@ async function loadUserData() {
 
 function getNovelUserData(id) {
   return userDataCache[id] || { progress:0, favorite:false, lastReadAt:null, ch:0 };
-}
-
-// Storage에서 소설 본문 로드 (메모리 캐시 포함)
-async function loadNovelText(nov) {
-  if (nov._textLoaded) return;
-  if (!nov.textUrl) return;
-  try {
-    const res      = await fetch(nov.textUrl);
-    nov.inlineText = await res.text();
-    nov._textLoaded = true;
-    _chsCache.delete(nov.id);
-  } catch(e) {
-    showToast('본문을 불러오지 못했어요', 'error');
-    console.error('loadNovelText error:', e);
-  }
 }
 
 async function setNovelUserData(id, patch) {
@@ -126,7 +110,7 @@ function renderHome() {
         <div class="continue-bar"><div class="continue-fill" style="width:${n.progress}%"></div></div>
         <div class="continue-pct">${n.progress}% 진행</div>
       </div>
-      <button class="continue-btn" onclick="event.stopPropagation();openViewer('${n.id}')">읽기</button>
+      <button class="continue-btn" onclick="event.stopPropagation()">읽기</button>
     </div>`;
   }).join('');
 
@@ -322,7 +306,6 @@ function openDetail(id) {
   document.getElementById('dFavBtn').textContent        = n.favorite ? '⭐' : '☆';
 }
 function closeDetail() { document.getElementById('detail').classList.remove('open'); }
-function readFromDetail() { openViewer(curId); }
 
 /* 소설 추가 (관리자) */
 let selG          = null;
@@ -516,8 +499,7 @@ async function saveNovel() {
 
     closeAdd();
     if (inlineText) {
-      const chCount = splitCh(inlineText).length;
-      showToast(`서재에 추가했어요 📚  총 ${chCount}화`);
+      showToast('서재에 추가했어요 📚');
     } else {
       showToast('서재에 추가했어요 📚');
     }
@@ -617,7 +599,6 @@ async function saveEdit() {
       tags:     document.getElementById('editTags').value.split(',').map(t => t.trim()).filter(Boolean),
       coverUrl: editCoverBase64,
     });
-    _chsCache.delete(curId);
     closeEdit();
     openDetail(curId);
     showToast('수정했어요 ✓');

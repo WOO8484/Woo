@@ -758,9 +758,9 @@ async function callGoogleBooksAPI(q, novelOnly = false) {
   const ctrl  = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 8000);
   try {
-    const query = novelOnly ? `${q}+subject:fiction` : q;
+    const query = novelOnly ? `${q} 소설+subject:fiction` : q;
     const res   = await fetch(
-      `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=10&langRestrict=ko`,
+      `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=10&printType=books`,
       { signal: ctrl.signal }
     );
     if (!res.ok) throw new Error('네트워크 오류');

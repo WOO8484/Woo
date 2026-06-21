@@ -592,23 +592,29 @@ async function saveEdit() {
   const btn = document.getElementById('editSaveBtn');
   btn.disabled = true; btn.textContent = '저장 중...';
   try {
+    let finalCoverUrl = editCoverBase64;
+    // base64 이미지면 Storage에 업로드
+    if (editCoverBase64 && editCoverBase64.startsWith('data:')) {
+      btn.textContent = '표지 업로드 중...';
+      const coverRef = firebase.storage().ref().child(`covers/${curId}.jpg`);
+      await coverRef.putString(editCoverBase64, 'data_url');
+      finalCoverUrl = await coverRef.getDownloadURL();
+    }
+    btn.textContent = '저장 중...';
     await db.collection('novels').doc(curId).update({
       title,
       author:   document.getElementById('editAuthor').value.trim() || '작자 미상',
       genre:    selEditG || 'etc',
       synopsis: document.getElementById('editSyn').value.trim(),
       tags:     document.getElementById('editTags').value.split(',').map(t => t.trim()).filter(Boolean),
-      coverUrl: editCoverBase64,
+      coverUrl: finalCoverUrl,
     });
     closeEdit();
     openDetail(curId);
     showToast('수정했어요 ✓');
   } catch(e) {
     console.error('saveEdit error:', e);
-    const msg = e.code === 'resource-exhausted' || e.message?.includes('size')
-      ? '이미지가 너무 커요. 더 작은 이미지를 사용해주세요'
-      : '수정에 실패했어요';
-    showToast(msg, 'error');
+    showToast('수정에 실패했어요', 'error');
   } finally {
     btn.disabled = false; btn.textContent = '수정 완료';
   }
@@ -769,9 +775,9 @@ function selectNaverBook(idx, item) {
   document.getElementById('authorFilledBadge').style.display = item.author      ? '' : 'none';
   document.getElementById('synFilledBadge').style.display    = item.description ? '' : 'none';
   if (item.coverUrl) {
-    addCoverBase64 = escapeHtml(item.coverUrl);
+    addCoverBase64 = item.coverUrl;
     const img = document.getElementById('coverPreviewImg');
-    img.src = escapeHtml(item.coverUrl); img.style.display = '';
+    img.src = item.coverUrl; img.style.display = '';
     document.getElementById('coverPreviewEmpty').style.display = 'none';
     document.getElementById('coverClearBtn').style.display     = '';
     document.getElementById('coverAutoBadge').style.display    = '';

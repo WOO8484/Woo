@@ -694,15 +694,12 @@ async function downloadNovel() {
 const WORKER_URL = 'https://old-meadow-5c40.qudrnr84.workers.dev';
 
 /* ══════════════════════════════════════════════
-   책 검색 팝업 (네이버 + 구글)
+   책 검색 팝업 (네이버)
    ══════════════════════════════════════════════ */
-let _naverTarget   = 'add';
-let _bookSearchTab = 'naver';
+let _naverTarget = 'add';
 
 function openNaverPopup(target) {
-  _naverTarget   = target || 'add';
-  _bookSearchTab = 'naver';
-  switchBookSearchTab('naver');
+  _naverTarget = target || 'add';
 
   // edit 모드면 현재 제목으로 자동 검색
   const title = target === 'edit'
@@ -724,23 +721,15 @@ function closeNaverPopup() {
   document.getElementById('naverPopupOv').classList.remove('on');
   document.getElementById('naverPopupModal').classList.remove('on');
 }
-function switchBookSearchTab(tab) {
-  _bookSearchTab = tab;
-  document.getElementById('tabNaver').classList.toggle('on',  tab === 'naver');
-  document.getElementById('tabGoogle').classList.toggle('on', tab === 'google');
-  document.getElementById('naverPopupResults').innerHTML = '';
-}
 
 async function searchBookPopup() {
-  const q   = document.getElementById('naverPopupInput').value.trim();
+  const q = document.getElementById('naverPopupInput').value.trim();
   if (!q) { showToast('검색어를 입력해주세요', 'error'); return; }
   const btn = document.getElementById('naverPopupBtn');
   btn.disabled = true; btn.textContent = '검색 중...';
   document.getElementById('naverPopupResults').innerHTML = '<div class="naver-status">🔍 검색 중...</div>';
   try {
-    const items = _bookSearchTab === 'google'
-      ? await callGoogleBooksAPI(q)
-      : await callNaverBookAPI(q);
+    const items = await callNaverBookAPI(q);
     renderNaverPopupResults(items);
   } catch(e) {
     console.error('searchBookPopup error:', e);
@@ -751,26 +740,6 @@ async function searchBookPopup() {
   } finally {
     btn.disabled = false; btn.textContent = '검색';
   }
-}
-
-async function callGoogleBooksAPI(q) {
-  const ctrl  = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), 8000);
-  try {
-    const res  = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&maxResults=10&langRestrict=ko`, { signal: ctrl.signal });
-    if (!res.ok) throw new Error('네트워크 오류');
-    const data = await res.json();
-    return (data.items || []).map(item => {
-      const info = item.volumeInfo || {};
-      return {
-        title:       info.title || '',
-        author:      (info.authors || []).join(', '),
-        description: info.description || '',
-        coverUrl:    info.imageLinks?.thumbnail?.replace('http:', 'https:') || '',
-        publisher:   info.publisher || '',
-      };
-    });
-  } finally { clearTimeout(timer); }
 }
 
 function renderNaverPopupResults(items) {
@@ -833,33 +802,40 @@ async function callNaverBookAPI(q) {
       .replace(/&#035;/g,'#').replace(/&#039;/g,"'")
       .trim();
 
-  // 1차: 제목 전용 상세검색 (book_adv)
-  let data;
-  try {
-    const ctrl1  = new AbortController();
-    const timer1 = setTimeout(() => ctrl1.abort(), 8000);
-    let res1;
-    try {
-      res1 = await fetch(`${WORKER_URL}?d_titl=${encodeURIComponent(q)}`, { signal: ctrl1.signal });
-    } finally {
-      clearTimeout(timer1);
-    }
-    if (res1.ok) data = await res1.json();
-  } catch(e) { /* 폴백으로 진행 */ }
+  // 띄어쓰기 보정: 공백 제거 버전도 준비
+  const qNoSpace = q.replace(/\s+/g, '');
 
-  // 2차: 결과 없으면 일반 검색으로 폴백
-  if (!data?.items?.length) {
-    const ctrl2  = new AbortController();
-    const timer2 = setTimeout(() => ctrl2.abort(), 8000);
-    let res2;
+  // 검색 헬퍼
+  const doSearch = async (query, useAdv) => {
+    const ctrl  = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 8000);
+    const param = useAdv
+      ? `d_titl=${encodeURIComponent(query)}`
+      : `q=${encodeURIComponent(query)}`;
     try {
-      res2 = await fetch(`${WORKER_URL}?q=${encodeURIComponent(q)}`, { signal: ctrl2.signal });
+      const res = await fetch(`${WORKER_URL}?${param}`, { signal: ctrl.signal });
+      if (!res.ok) return null;
+      return await res.json();
+    } catch(e) {
+      return null;
     } finally {
-      clearTimeout(timer2);
+      clearTimeout(timer);
     }
-    if (!res2.ok) throw new Error('네트워크 오류');
-    data = await res2.json();
-  }
+  };
+
+  // 1차: 원본 제목으로 상세검색 (book_adv)
+  let data = await doSearch(q, true);
+
+  // 2차: 공백 제거 제목으로 상세검색
+  if (!data?.items?.length) data = await doSearch(qNoSpace, true);
+
+  // 3차: 원본으로 일반검색
+  if (!data?.items?.length) data = await doSearch(q, false);
+
+  // 4차: 공백 제거로 일반검색
+  if (!data?.items?.length) data = await doSearch(qNoSpace, false);
+
+  if (!data) throw new Error('네트워크 오류');
 
   return (data.items || []).map(item => ({
     title:       cleanNaver(item.title),

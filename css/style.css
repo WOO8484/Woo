@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════
-   Mr.woo v2.9.3  —  style.css
+   Mr.woo v2.9.4  —  style.css
    ══════════════════════════════════════════════ */
 
 /* ── DESIGN TOKENS ── */
@@ -500,6 +500,13 @@ html,body {
   transition:background var(--tr);
 }
 .naver-open-btn:hover { background:var(--accent2); color:var(--accent); border-color:var(--accent); }
+.book-search-tabs { display:flex; gap:6px; margin-bottom:12px; }
+.book-search-tab  {
+  flex:1; height:34px; border-radius:10px;
+  border:1.5px solid var(--line); background:#fff;
+  font-size:13px; font-weight:600; color:var(--ink3); cursor:pointer;
+}
+.book-search-tab.on { border-color:var(--accent); color:var(--accent); background:var(--accent2); }
 .naver-result-item {
   display:flex; gap:10px; padding:10px; border:1.5px solid var(--line);
   border-radius:10px; cursor:pointer; transition:all var(--tr);
@@ -657,9 +664,9 @@ html,body {
 .vpopup-close { width:100%; height:48px; border-radius:12px; background:var(--accent); color:#fff; border:none; font-size:14px; font-weight:700; cursor:pointer; }
 
 /* ── 읽기 설정 ── */
-.modal-ov { position:fixed; inset:0; background:rgba(0,0,0,.3); z-index:540; opacity:0; pointer-events:none; transition:opacity .2s; }
+.modal-ov { position:fixed; inset:0; background:rgba(0,0,0,.3); z-index:740; opacity:0; pointer-events:none; transition:opacity .2s; }
 .modal-ov.on { opacity:1; pointer-events:all; }
-.modal { position:fixed; bottom:0; left:0; right:0; background:var(--bg); border-radius:20px 20px 0 0; padding:10px 16px max(20px,env(safe-area-inset-bottom)); z-index:550; transform:translateY(100%); transition:transform .28s cubic-bezier(.32,.72,0,1); }
+.modal { position:fixed; bottom:0; left:0; right:0; background:var(--bg); border-radius:20px 20px 0 0; padding:10px 16px max(20px,env(safe-area-inset-bottom)); z-index:750; transform:translateY(100%); transition:transform .28s cubic-bezier(.32,.72,0,1); }
 .modal.on { transform:translateY(0); }
 .mhandle { width:36px; height:4px; background:var(--line); border-radius:2px; margin:0 auto 10px; }
 .modal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }

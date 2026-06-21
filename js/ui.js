@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════
-   Mr.woo v2.8.0  —  js/ui.js
+   Mr.woo v2.8.1  —  js/ui.js
    공통 UI 유틸리티
    ══════════════════════════════════════════════ */
 'use strict';
@@ -64,11 +64,11 @@ function showApp() {
   document.getElementById('authScreen').style.display    = 'none';
   document.getElementById('mainNav').style.display       = 'flex';
   document.getElementById('tabBar').style.display        = 'flex';
-  const name   = currentUser.displayName || currentUser.email.split('@')[0];
+  const name   = currentUser.displayName || currentUser.email?.split('@')[0] || currentUser.uid;
   const avatar = getAvatar(name);
   document.getElementById('navAvatar').textContent    = avatar;
   document.getElementById('menuName').textContent     = name;
-  document.getElementById('menuEmail').textContent    = currentUser.email;
+  document.getElementById('menuEmail').textContent    = currentUser.email || '';
   document.getElementById('homeUserName').textContent = name;
   renderGenreTabs();
   switchTab('home');
@@ -100,7 +100,7 @@ function closeConfirm() {
    ═══════════════════════════════════════════════ */
 function openNameEdit() {
   const input = document.getElementById('nameEditInput');
-  const name  = currentUser.displayName || currentUser.email.split('@')[0];
+  const name  = currentUser.displayName || currentUser.email?.split('@')[0] || '';
   input.value = name;
   document.getElementById('nameEditMsg').textContent = '';
   document.getElementById('nameEditOv').classList.add('on');
@@ -119,21 +119,15 @@ async function saveNameEdit() {
   okBtn.disabled = true; okBtn.textContent = '저장 중...';
 
   try {
-    // Firebase Auth displayName 업데이트 (compat SDK 방식)
-    await auth.currentUser.updateProfile({ displayName: name });
-
-    // Firestore users 문서 업데이트 (사용자 목록에 반영)
-    await db.collection('users').doc(auth.currentUser.uid).set(
-      { displayName: name },
-      { merge: true }
-    );
-
-    // UI 즉시 반영
+    if (currentUser.isFirebase && auth.currentUser) {
+      await auth.currentUser.updateProfile({ displayName: name });
+    }
+    await db.collection('users').doc(currentUser.uid).set({ displayName: name }, { merge: true });
+    currentUser.displayName = name;
     document.getElementById('profileName').textContent  = name;
     document.getElementById('homeUserName').textContent = name;
     document.getElementById('navAvatar').textContent    = getAvatar(name);
     document.getElementById('menuName').textContent     = name;
-
     closeNameEdit();
     showToast('이름을 변경했어요 ✓');
   } catch(e) {

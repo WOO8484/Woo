@@ -1,4 +1,4 @@
-/* Mr.woo v2.8.0  —  js/novels.js / 소설 CRUD, 유저 데이터, 홈/서재 렌더링 */
+/* Mr.woo v2.8.1  —  js/novels.js / 소설 CRUD, 유저 데이터, 홈/서재 렌더링 */
 'use strict';
 
 /* Firestore — 소설 목록 실시간 구독 */
@@ -783,10 +783,10 @@ function selectNaverBook(idx, item) {
 async function renderProfile() {
   if (!currentUser) return;
   try {
-    const name = currentUser.displayName || currentUser.email.split('@')[0];
+    const name = currentUser.displayName || currentUser.email?.split('@')[0] || '사용자';
     document.getElementById('profileAvatar').textContent = getAvatar(name);
     document.getElementById('profileName').textContent   = name;
-    document.getElementById('profileEmail').textContent  = currentUser.email;
+    document.getElementById('profileEmail').textContent  = currentUser.email || '';
     document.getElementById('profileRole').textContent   = isAdmin ? '관리자' : '독자';
     const plist = getNovelsWithUserData();
     document.getElementById('pStatTotal').textContent   = plist.length;

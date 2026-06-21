@@ -44,7 +44,7 @@
   <div class="auth-form" id="loginForm">
     <div class="auth-msg" id="authMsg"></div>
     <div class="auth-field">
-      <input class="auth-input" id="authEmail" type="email" placeholder="이메일" autocomplete="email">
+      <input class="auth-input" id="authEmail" type="text" placeholder="아이디 또는 이메일" autocomplete="username">
     </div>
     <div class="auth-field">
       <div class="auth-input-wrap">
@@ -54,7 +54,7 @@
     </div>
     <button class="auth-btn" id="authBtn" onclick="doLogin()">로그인</button>
   </div>
-  <div style="text-align:center;margin-top:20px;font-size:11px;color:var(--ink3)">v2.8.0</div>
+  <div style="text-align:center;margin-top:20px;font-size:11px;color:var(--ink3)">v2.8.1</div>
 </div>
 
 <!-- ── USER MENU ── -->
@@ -69,7 +69,7 @@
 <!-- ── NAV ── -->
 <nav class="nav" id="mainNav">
   <div class="nav-logo">🚀 <em>Mr.woo</em></div>
-  <div class="nav-version">v2.8.0</div>
+  <div class="nav-version">v2.8.1</div>
   <div class="nav-right">
     <button class="nav-add" id="navAddBtn" onclick="openAdd()" title="소설 추가">＋</button>
     <div class="nav-avatar" id="navAvatar" onclick="toggleUserMenu(event)">🐱</div>
@@ -401,10 +401,10 @@
         <input class="auth-input" id="addUserName" type="text" placeholder="이름" style="height:40px;font-size:14px">
       </div>
       <div class="auth-field" style="margin-bottom:8px">
-        <input class="auth-input" id="addUserEmail" type="email" placeholder="이메일" style="height:40px;font-size:14px">
+        <input class="auth-input" id="addUserUsername" type="text" placeholder="아이디" style="height:40px;font-size:14px">
       </div>
       <div class="auth-field" style="margin-bottom:4px">
-        <input class="auth-input" id="addUserPw" type="password" placeholder="임시 비밀번호 (6자 이상)" style="height:40px;font-size:14px">
+        <input class="auth-input" id="addUserPw" type="password" placeholder="비밀번호 (4자 이상)" style="height:40px;font-size:14px">
       </div>
       <div id="addUserMsg" style="font-size:12px;color:var(--danger);min-height:16px;margin-top:4px"></div>
     </div>
@@ -412,23 +412,6 @@
       <button class="confirm-cancel" onclick="closeAddUser()">취소</button>
       <button class="confirm-ok" id="addUserBtn" style="background:var(--accent)" onclick="submitAddUser()">계정 생성</button>
     </div>
-  </div>
-</div>
-
-<!-- ── 비밀번호 변경 (첫 로그인 강제) ── -->
-<div id="pwChangeScreen" style="display:none; position:fixed; inset:0; z-index:800; background:var(--bg); flex-direction:column; align-items:center; justify-content:center; padding:32px;">
-  <div style="width:100%; max-width:360px">
-    <div style="font-size:24px; text-align:center; margin-bottom:8px">🔐</div>
-    <div style="font-size:18px; font-weight:800; text-align:center; margin-bottom:8px">비밀번호 변경</div>
-    <div style="font-size:13px; color:var(--ink3); text-align:center; margin-bottom:24px">첫 로그인 시 비밀번호를 변경해주세요</div>
-    <div class="auth-field" style="margin-bottom:12px">
-      <input class="auth-input" id="pwChangeNew" type="password" placeholder="새 비밀번호 (6자 이상)">
-    </div>
-    <div class="auth-field" style="margin-bottom:12px">
-      <input class="auth-input" id="pwChangeConfirm" type="password" placeholder="비밀번호 확인">
-    </div>
-    <div id="pwChangeMsg" style="font-size:12px; color:var(--danger); min-height:16px; margin-bottom:12px"></div>
-    <button class="auth-btn" id="pwChangeBtn" onclick="submitPwChange()">변경 완료</button>
   </div>
 </div>
 

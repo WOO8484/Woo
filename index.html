@@ -78,7 +78,7 @@
     <button class="auth-btn" id="signupBtn" onclick="doSignupRequest()">가입 신청하기</button>
   </div>
 
-  <div style="text-align:center;margin-top:20px;font-size:11px;color:var(--ink3)">v2.5.6</div>
+  <div style="text-align:center;margin-top:20px;font-size:11px;color:var(--ink3)">v2.6.0</div>
 </div>
 
 <!-- ── USER MENU ── -->
@@ -93,7 +93,7 @@
 <!-- ── NAV ── -->
 <nav class="nav" id="mainNav">
   <div class="nav-logo">🚀 <em>Mr.woo</em></div>
-  <div class="nav-version">v2.5.6</div>
+  <div class="nav-version">v2.6.0</div>
   <div class="nav-right">
     <button class="nav-add" id="navAddBtn" onclick="openAdd()" title="소설 추가">＋</button>
     <div class="nav-avatar" id="navAvatar" onclick="toggleUserMenu(event)">🐱</div>
@@ -253,8 +253,11 @@
       <div class="dstat"><div class="dstat-val" id="dStatProg">0p</div><div class="dstat-lbl">읽은 분량</div></div>
       <div class="dstat"><div class="dstat-val" id="dStatPages">0p</div><div class="dstat-lbl">전체 분량</div></div>
     </div>
-    <!-- 고정 카드 (내용 추후 연결) -->
-    <div class="dcard"></div>
+    <!-- 줄거리 카드 -->
+    <div class="dcard">
+      <div class="dcard-label">줄거리</div>
+      <div class="dcard-body" id="dSynBody"></div>
+    </div>
   </div>
   <div class="dfoot">
     <button class="dread-btn" id="dReadBtn" onclick="readFromDetail()">처음부터 읽기</button>
@@ -271,6 +274,7 @@
       <div class="vtext" id="vText"></div>
     </div>
   </div>
+  <div class="vfoot"></div>
   <div class="vtap-left"   onclick="prevCh()"></div>
   <div class="vtap-right"  onclick="nextCh()"></div>
   <div class="vtap-center" onclick="openViewerPopup()"></div>
